@@ -44,6 +44,56 @@ const ITEM_SHEEP_SPAWN_EGG: int = 1024
 const ITEM_COW_SPAWN_EGG: int = 1025
 const ITEM_CHICKEN_SPAWN_EGG: int = 1026
 
+const ITEM_CARROT: int = 1201
+const ITEM_POTATO: int = 1202
+const ITEM_RICE: int = 1203
+const ITEM_COOKED_RICE: int = 1204
+const ITEM_TOMATO: int = 1205
+const ITEM_CHEESE: int = 1206
+const ITEM_FLOUR: int = 1207
+const ITEM_DOUGH: int = 1208
+const ITEM_RAW_CHEESE_PIZZA: int = 1209
+const ITEM_CHEESE_PIZZA: int = 1210
+const ITEM_STRAWBERRY: int = 1211
+const ITEM_BLUEBERRY: int = 1212
+const ITEM_BLACKBERRY: int = 1213
+const ITEM_MANGO: int = 1214
+const ITEM_SMOOTHIE: int = 1215
+const ITEM_CUCUMBER: int = 1216
+const ITEM_PICKLES: int = 1217
+const ITEM_MASHED_POTATOES: int = 1218
+const ITEM_RICE_AND_CHICKEN: int = 1219
+const ITEM_PAN: int = 1220
+const ITEM_POT: int = 1221
+const ITEM_COOKIE_DOUGH: int = 1222
+const ITEM_CHOCOLATE_CHIP_COOKIE: int = 1223
+const ITEM_PIZZA_BASE: int = 1224
+const ITEM_STEAK: int = 1225
+const ITEM_NOODLES: int = 1226
+const ITEM_BROTH: int = 1227
+const ITEM_CHICKEN_NOODLE_SOUP: int = 1228
+const ITEM_MAC_AND_CHEESE: int = 1229
+const ITEM_GROUND_BEEF: int = 1230
+const ITEM_SLICED_TOMATO: int = 1231
+const ITEM_SHREDDED_CHEESE: int = 1232
+const ITEM_BAKED_POTATO: int = 1233
+const ITEM_WHEAT: int = 1234
+const ITEM_PHO: int = 1235
+const ITEM_DADS_SPAGHETTI: int = 1236
+const ITEM_MEATLOAF_MIX: int = 1237
+const ITEM_MEATLOAF: int = 1238
+const ITEM_RAW_MEAT_LOVERS_PIZZA: int = 1239
+const ITEM_MEAT_LOVERS_PIZZA: int = 1240
+const ITEM_CHICKEN_ALFREDO: int = 1241
+const ITEM_BREADSTICKS: int = 1242
+const ITEM_ITALIAN_CHEESE_BREAD_DOUGH: int = 1243
+const ITEM_ITALIAN_CHEESE_BREAD: int = 1244
+const ITEM_FOOTLONG_SANDWICH: int = 1245
+const ITEM_SPRING_ROLLS: int = 1246
+const ITEM_CARAMEL_FRAPPE: int = 1247
+const ITEM_RED_VELVET_COOKIE_DOUGH: int = 1248
+const ITEM_RED_VELVET_COOKIE: int = 1249
+
 const ITEM_SHIRT_RED: int = 1101
 const ITEM_HOODIE_RED: int = 1102
 
@@ -86,6 +136,61 @@ const IRON_AXE_ICON: Texture2D = preload("res://assets/textures/items/iron_axe.p
 const SHEEP_SPAWN_EGG_ICON: Texture2D = preload("res://assets/textures/items/sheep_spawn_egg.png")
 const COW_SPAWN_EGG_ICON: Texture2D = preload("res://assets/textures/items/cow_spawn_egg.png")
 const CHICKEN_SPAWN_EGG_ICON: Texture2D = preload("res://assets/textures/items/chicken_spawn_egg.png")
+const CARROT_ICON: Texture2D = preload("res://assets/textures/items/carrot.png")
+const POTATO_ICON: Texture2D = preload("res://assets/textures/items/potato.png")
+const RICE_ICON: Texture2D = preload("res://assets/textures/items/rice.png")
+const COOKED_RICE_ICON: Texture2D = preload("res://assets/textures/items/cooked_rice.png")
+const TOMATO_ICON: Texture2D = preload("res://assets/textures/items/tomato.png")
+const CHEESE_ICON: Texture2D = preload("res://assets/textures/items/cheese.png")
+const FLOUR_ICON: Texture2D = preload("res://assets/textures/items/flour.png")
+const DOUGH_ICON: Texture2D = preload("res://assets/textures/items/dough.png")
+const RAW_CHEESE_PIZZA_ICON: Texture2D = preload("res://assets/textures/items/raw_cheese_pizza.png")
+const CHEESE_PIZZA_ICON: Texture2D = preload("res://assets/textures/items/cheese_pizza.png")
+const STRAWBERRY_ICON: Texture2D = preload("res://assets/textures/items/strawberry.png")
+const BLUEBERRY_ICON: Texture2D = preload("res://assets/textures/items/blueberry.png")
+const BLACKBERRY_ICON: Texture2D = preload("res://assets/textures/items/blackberry.png")
+const MANGO_ICON: Texture2D = preload("res://assets/textures/items/mango.png")
+const SMOOTHIE_ICON: Texture2D = preload("res://assets/textures/items/smoothie.png")
+const CUCUMBER_ICON: Texture2D = preload("res://assets/textures/items/cucumber.png")
+const PICKLES_ICON: Texture2D = preload("res://assets/textures/items/pickles.png")
+const MASHED_POTATOES_ICON: Texture2D = preload("res://assets/textures/items/mashed_potatoes.png")
+const RICE_AND_CHICKEN_ICON: Texture2D = preload("res://assets/textures/items/rice_and_chicken.png")
+const PAN_ICON: Texture2D = preload("res://assets/textures/items/pan.png")
+const POT_ICON: Texture2D = preload("res://assets/textures/items/pot.png")
+const COOKIE_DOUGH_ICON: Texture2D = preload("res://assets/textures/items/cookie_dough.png")
+const CHOCOLATE_CHIP_COOKIE_ICON: Texture2D = preload("res://assets/textures/items/chocolate_chip_cookie.png")
+const PIZZA_BASE_ICON: Texture2D = preload("res://assets/textures/items/pizza_base.png")
+const STEAK_MEAL_ICON: Texture2D = preload("res://assets/textures/items/steak_cooked.png")
+const NOODLES_ICON: Texture2D = preload("res://assets/textures/items/noodles.png")
+const BROTH_ICON: Texture2D = preload("res://assets/textures/items/broth.png")
+const CHICKEN_NOODLE_SOUP_ICON: Texture2D = preload("res://assets/textures/items/chicken_noodle_soup.png")
+const MAC_AND_CHEESE_ICON: Texture2D = preload("res://assets/textures/items/mac_and_cheese.png")
+const GROUND_BEEF_ICON: Texture2D = preload("res://assets/textures/items/ground_beef.png")
+const SLICED_TOMATO_ICON: Texture2D = preload("res://assets/textures/items/sliced_tomato.png")
+const SHREDDED_CHEESE_ICON: Texture2D = preload("res://assets/textures/items/shredded_cheese.png")
+const BAKED_POTATO_ICON: Texture2D = preload("res://assets/textures/items/baked_potato.png")
+const WHEAT_ICON: Texture2D = preload("res://assets/textures/items/wheat.png")
+const PREP_TABLE_ICON: Texture2D = preload("res://assets/textures/items/prep_table.png")
+const STOVE_ICON: Texture2D = preload("res://assets/textures/items/stove.png")
+const OVEN_ICON: Texture2D = preload("res://assets/textures/items/oven.png")
+const FERMENTER_ICON: Texture2D = preload("res://assets/textures/items/fermenter.png")
+const BLENDER_ICON: Texture2D = preload("res://assets/textures/items/blender.png")
+const DISPLAY_CASE_ICON: Texture2D = preload("res://assets/textures/items/display_case.png")
+const PHO_ICON: Texture2D = preload("res://assets/textures/items/pho.png")
+const DADS_SPAGHETTI_ICON: Texture2D = preload("res://assets/textures/items/dads_spaghetti.png")
+const MEATLOAF_MIX_ICON: Texture2D = preload("res://assets/textures/items/meatloaf_mix.png")
+const MEATLOAF_ICON: Texture2D = preload("res://assets/textures/items/meatloaf.png")
+const RAW_MEAT_LOVERS_PIZZA_ICON: Texture2D = preload("res://assets/textures/items/raw_meat_lovers_pizza.png")
+const MEAT_LOVERS_PIZZA_ICON: Texture2D = preload("res://assets/textures/items/meat_lovers_pizza.png")
+const CHICKEN_ALFREDO_ICON: Texture2D = preload("res://assets/textures/items/chicken_alfredo.png")
+const BREADSTICKS_ICON: Texture2D = preload("res://assets/textures/items/breadsticks.png")
+const ITALIAN_CHEESE_BREAD_DOUGH_ICON: Texture2D = preload("res://assets/textures/items/italian_cheese_bread_dough.png")
+const ITALIAN_CHEESE_BREAD_ICON: Texture2D = preload("res://assets/textures/items/italian_cheese_bread.png")
+const FOOTLONG_SANDWICH_ICON: Texture2D = preload("res://assets/textures/items/footlong_sandwich.png")
+const SPRING_ROLLS_ICON: Texture2D = preload("res://assets/textures/items/spring_rolls.png")
+const CARAMEL_FRAPPE_ICON: Texture2D = preload("res://assets/textures/items/caramel_frappe.png")
+const RED_VELVET_COOKIE_DOUGH_ICON: Texture2D = preload("res://assets/textures/items/red_velvet_cookie_dough.png")
+const RED_VELVET_COOKIE_ICON: Texture2D = preload("res://assets/textures/items/red_velvet_cookie.png")
 const SHIRT_TEXTURE: Texture2D = preload("res://assets/textures/player/shirt_under.png")
 const HOODIE_TEXTURE: Texture2D = preload("res://assets/textures/player/hoodie_outer.png")
 
@@ -96,6 +201,7 @@ const CREATIVE_CATEGORY_NAMES: PackedStringArray = [
     "Tools",
     "Food",
     "Spawn Eggs",
+    "Cooking",
 ]
 
 const CREATIVE_CATEGORY_ALL: int = 0
@@ -104,6 +210,7 @@ const CREATIVE_CATEGORY_ITEMS: int = 2
 const CREATIVE_CATEGORY_TOOLS: int = 3
 const CREATIVE_CATEGORY_FOOD: int = 4
 const CREATIVE_CATEGORY_SPAWN_EGGS: int = 5
+const CREATIVE_CATEGORY_COOKING: int = 6
 
 static func is_block(item_id: int) -> bool:
     return item_id > 0 and item_id < 1000 and item_id != ITEM_WATER
@@ -180,6 +287,114 @@ static func get_display_name(item_id: int) -> String:
             return "Cow Spawn Egg"
         ITEM_CHICKEN_SPAWN_EGG:
             return "Chicken Spawn Egg"
+        ITEM_CARROT:
+            return "Carrot"
+        ITEM_POTATO:
+            return "Potato"
+        ITEM_RICE:
+            return "Rice"
+        ITEM_COOKED_RICE:
+            return "Cooked Rice"
+        ITEM_TOMATO:
+            return "Tomato"
+        ITEM_CHEESE:
+            return "Cheese"
+        ITEM_FLOUR:
+            return "Flour"
+        ITEM_DOUGH:
+            return "Dough"
+        ITEM_RAW_CHEESE_PIZZA:
+            return "Raw Cheese Pizza"
+        ITEM_CHEESE_PIZZA:
+            return "Cheese Pizza"
+        ITEM_STRAWBERRY:
+            return "Strawberry"
+        ITEM_BLUEBERRY:
+            return "Blueberry"
+        ITEM_BLACKBERRY:
+            return "Blackberry"
+        ITEM_MANGO:
+            return "Mango"
+        ITEM_SMOOTHIE:
+            return "Smoothie"
+        ITEM_CUCUMBER:
+            return "Cucumber"
+        ITEM_PICKLES:
+            return "Pickles"
+        ITEM_MASHED_POTATOES:
+            return "Mashed Potatoes"
+        ITEM_RICE_AND_CHICKEN:
+            return "Rice and Chicken"
+        ITEM_PAN:
+            return "Pan"
+        ITEM_POT:
+            return "Pot"
+        ITEM_COOKIE_DOUGH:
+            return "Cookie Dough"
+        ITEM_CHOCOLATE_CHIP_COOKIE:
+            return "Chocolate Chip Cookie"
+        ITEM_PIZZA_BASE:
+            return "Pizza Base"
+        ITEM_STEAK:
+            return "Steak"
+        ITEM_NOODLES:
+            return "Noodles"
+        ITEM_BROTH:
+            return "Broth"
+        ITEM_CHICKEN_NOODLE_SOUP:
+            return "Chicken Noodle Soup"
+        ITEM_MAC_AND_CHEESE:
+            return "Mac and Cheese"
+        ITEM_GROUND_BEEF:
+            return "Ground Beef"
+        ITEM_SLICED_TOMATO:
+            return "Sliced Tomato"
+        ITEM_SHREDDED_CHEESE:
+            return "Shredded Cheese"
+        ITEM_BAKED_POTATO:
+            return "Baked Potato"
+        ITEM_WHEAT:
+            return "Wheat"
+        ITEM_PHO:
+            return "Pho"
+        ITEM_DADS_SPAGHETTI:
+            return "Dad's Spaghetti"
+        ITEM_MEATLOAF_MIX:
+            return "Meatloaf Mix"
+        ITEM_MEATLOAF:
+            return "Meatloaf"
+        ITEM_RAW_MEAT_LOVERS_PIZZA:
+            return "Raw Meat-Lovers Pizza"
+        ITEM_MEAT_LOVERS_PIZZA:
+            return "Meat-Lovers Pizza"
+        ITEM_CHICKEN_ALFREDO:
+            return "Chicken Alfredo"
+        ITEM_BREADSTICKS:
+            return "Breadsticks"
+        ITEM_ITALIAN_CHEESE_BREAD_DOUGH:
+            return "Italian Cheese Bread Dough"
+        ITEM_ITALIAN_CHEESE_BREAD:
+            return "Italian Cheese Bread"
+        ITEM_FOOTLONG_SANDWICH:
+            return "Footlong Sandwich"
+        ITEM_SPRING_ROLLS:
+            return "Spring Rolls"
+        ITEM_CARAMEL_FRAPPE:
+            return "Caramel Frappe"
+        ITEM_RED_VELVET_COOKIE_DOUGH:
+            return "Red Velvet Cookie Dough"
+        ITEM_RED_VELVET_COOKIE:
+            return "Red Velvet Cookie"
+        SSDVoxelDefs.BlockId.PREP_TABLE:
+            return "Prep Table"
+        SSDVoxelDefs.BlockId.STOVE:
+            return "Stove"
+        SSDVoxelDefs.BlockId.OVEN:
+            return "Oven"
+        SSDVoxelDefs.BlockId.FERMENTER:
+            return "Fermentation Jar"
+        SSDVoxelDefs.BlockId.BLENDER:
+            return "Blender"
         ITEM_SHIRT_RED:
             return "Red Shirt"
         ITEM_HOODIE_RED:
@@ -241,6 +456,114 @@ static func get_item_name(item_id: int) -> String:
             return "cow_spawn_egg"
         ITEM_CHICKEN_SPAWN_EGG:
             return "chicken_spawn_egg"
+        ITEM_CARROT:
+            return "carrot"
+        ITEM_POTATO:
+            return "potato"
+        ITEM_RICE:
+            return "rice"
+        ITEM_COOKED_RICE:
+            return "cooked_rice"
+        ITEM_TOMATO:
+            return "tomato"
+        ITEM_CHEESE:
+            return "cheese"
+        ITEM_FLOUR:
+            return "flour"
+        ITEM_DOUGH:
+            return "dough"
+        ITEM_RAW_CHEESE_PIZZA:
+            return "raw_cheese_pizza"
+        ITEM_CHEESE_PIZZA:
+            return "cheese_pizza"
+        ITEM_STRAWBERRY:
+            return "strawberry"
+        ITEM_BLUEBERRY:
+            return "blueberry"
+        ITEM_BLACKBERRY:
+            return "blackberry"
+        ITEM_MANGO:
+            return "mango"
+        ITEM_SMOOTHIE:
+            return "smoothie"
+        ITEM_CUCUMBER:
+            return "cucumber"
+        ITEM_PICKLES:
+            return "pickles"
+        ITEM_MASHED_POTATOES:
+            return "mashed_potatoes"
+        ITEM_RICE_AND_CHICKEN:
+            return "rice_and_chicken"
+        ITEM_PAN:
+            return "pan"
+        ITEM_POT:
+            return "pot"
+        ITEM_COOKIE_DOUGH:
+            return "cookie_dough"
+        ITEM_CHOCOLATE_CHIP_COOKIE:
+            return "chocolate_chip_cookie"
+        ITEM_PIZZA_BASE:
+            return "pizza_base"
+        ITEM_STEAK:
+            return "steak"
+        ITEM_NOODLES:
+            return "noodles"
+        ITEM_BROTH:
+            return "broth"
+        ITEM_CHICKEN_NOODLE_SOUP:
+            return "chicken_noodle_soup"
+        ITEM_MAC_AND_CHEESE:
+            return "mac_and_cheese"
+        ITEM_GROUND_BEEF:
+            return "ground_beef"
+        ITEM_SLICED_TOMATO:
+            return "sliced_tomato"
+        ITEM_SHREDDED_CHEESE:
+            return "shredded_cheese"
+        ITEM_BAKED_POTATO:
+            return "baked_potato"
+        ITEM_WHEAT:
+            return "wheat"
+        ITEM_PHO:
+            return "pho"
+        ITEM_DADS_SPAGHETTI:
+            return "dads_spaghetti"
+        ITEM_MEATLOAF_MIX:
+            return "meatloaf_mix"
+        ITEM_MEATLOAF:
+            return "meatloaf"
+        ITEM_RAW_MEAT_LOVERS_PIZZA:
+            return "raw_meat_lovers_pizza"
+        ITEM_MEAT_LOVERS_PIZZA:
+            return "meat_lovers_pizza"
+        ITEM_CHICKEN_ALFREDO:
+            return "chicken_alfredo"
+        ITEM_BREADSTICKS:
+            return "breadsticks"
+        ITEM_ITALIAN_CHEESE_BREAD_DOUGH:
+            return "italian_cheese_bread_dough"
+        ITEM_ITALIAN_CHEESE_BREAD:
+            return "italian_cheese_bread"
+        ITEM_FOOTLONG_SANDWICH:
+            return "footlong_sandwich"
+        ITEM_SPRING_ROLLS:
+            return "spring_rolls"
+        ITEM_CARAMEL_FRAPPE:
+            return "caramel_frappe"
+        ITEM_RED_VELVET_COOKIE_DOUGH:
+            return "red_velvet_cookie_dough"
+        ITEM_RED_VELVET_COOKIE:
+            return "red_velvet_cookie"
+        SSDVoxelDefs.BlockId.PREP_TABLE:
+            return "prep_table"
+        SSDVoxelDefs.BlockId.STOVE:
+            return "stove"
+        SSDVoxelDefs.BlockId.OVEN:
+            return "oven"
+        SSDVoxelDefs.BlockId.FERMENTER:
+            return "fermenter"
+        SSDVoxelDefs.BlockId.BLENDER:
+            return "blender"
         ITEM_SHIRT_RED:
             return "red_shirt"
         ITEM_HOODIE_RED:
@@ -343,6 +666,116 @@ static func get_inventory_icon_texture(item_id: int) -> Texture2D:
             return COW_SPAWN_EGG_ICON
         ITEM_CHICKEN_SPAWN_EGG:
             return CHICKEN_SPAWN_EGG_ICON
+        ITEM_CARROT:
+            return CARROT_ICON
+        ITEM_POTATO:
+            return POTATO_ICON
+        ITEM_RICE:
+            return RICE_ICON
+        ITEM_COOKED_RICE:
+            return COOKED_RICE_ICON
+        ITEM_TOMATO:
+            return TOMATO_ICON
+        ITEM_CHEESE:
+            return CHEESE_ICON
+        ITEM_FLOUR:
+            return FLOUR_ICON
+        ITEM_DOUGH:
+            return DOUGH_ICON
+        ITEM_RAW_CHEESE_PIZZA:
+            return RAW_CHEESE_PIZZA_ICON
+        ITEM_CHEESE_PIZZA:
+            return CHEESE_PIZZA_ICON
+        ITEM_STRAWBERRY:
+            return STRAWBERRY_ICON
+        ITEM_BLUEBERRY:
+            return BLUEBERRY_ICON
+        ITEM_BLACKBERRY:
+            return BLACKBERRY_ICON
+        ITEM_MANGO:
+            return MANGO_ICON
+        ITEM_SMOOTHIE:
+            return SMOOTHIE_ICON
+        ITEM_CUCUMBER:
+            return CUCUMBER_ICON
+        ITEM_PICKLES:
+            return PICKLES_ICON
+        ITEM_MASHED_POTATOES:
+            return MASHED_POTATOES_ICON
+        ITEM_RICE_AND_CHICKEN:
+            return RICE_AND_CHICKEN_ICON
+        ITEM_PAN:
+            return PAN_ICON
+        ITEM_POT:
+            return POT_ICON
+        ITEM_COOKIE_DOUGH:
+            return COOKIE_DOUGH_ICON
+        ITEM_CHOCOLATE_CHIP_COOKIE:
+            return CHOCOLATE_CHIP_COOKIE_ICON
+        ITEM_PIZZA_BASE:
+            return PIZZA_BASE_ICON
+        ITEM_STEAK:
+            return STEAK_MEAL_ICON
+        ITEM_NOODLES:
+            return NOODLES_ICON
+        ITEM_BROTH:
+            return BROTH_ICON
+        ITEM_CHICKEN_NOODLE_SOUP:
+            return CHICKEN_NOODLE_SOUP_ICON
+        ITEM_MAC_AND_CHEESE:
+            return MAC_AND_CHEESE_ICON
+        ITEM_GROUND_BEEF:
+            return GROUND_BEEF_ICON
+        ITEM_SLICED_TOMATO:
+            return SLICED_TOMATO_ICON
+        ITEM_SHREDDED_CHEESE:
+            return SHREDDED_CHEESE_ICON
+        ITEM_BAKED_POTATO:
+            return BAKED_POTATO_ICON
+        ITEM_WHEAT:
+            return WHEAT_ICON
+        ITEM_PHO:
+            return PHO_ICON
+        ITEM_DADS_SPAGHETTI:
+            return DADS_SPAGHETTI_ICON
+        ITEM_MEATLOAF_MIX:
+            return MEATLOAF_MIX_ICON
+        ITEM_MEATLOAF:
+            return MEATLOAF_ICON
+        ITEM_RAW_MEAT_LOVERS_PIZZA:
+            return RAW_MEAT_LOVERS_PIZZA_ICON
+        ITEM_MEAT_LOVERS_PIZZA:
+            return MEAT_LOVERS_PIZZA_ICON
+        ITEM_CHICKEN_ALFREDO:
+            return CHICKEN_ALFREDO_ICON
+        ITEM_BREADSTICKS:
+            return BREADSTICKS_ICON
+        ITEM_ITALIAN_CHEESE_BREAD_DOUGH:
+            return ITALIAN_CHEESE_BREAD_DOUGH_ICON
+        ITEM_ITALIAN_CHEESE_BREAD:
+            return ITALIAN_CHEESE_BREAD_ICON
+        ITEM_FOOTLONG_SANDWICH:
+            return FOOTLONG_SANDWICH_ICON
+        ITEM_SPRING_ROLLS:
+            return SPRING_ROLLS_ICON
+        ITEM_CARAMEL_FRAPPE:
+            return CARAMEL_FRAPPE_ICON
+        ITEM_RED_VELVET_COOKIE_DOUGH:
+            return RED_VELVET_COOKIE_DOUGH_ICON
+        ITEM_RED_VELVET_COOKIE:
+            return RED_VELVET_COOKIE_ICON
+        SSDVoxelDefs.BlockId.PREP_TABLE:
+            return PREP_TABLE_ICON
+        SSDVoxelDefs.BlockId.STOVE:
+            return STOVE_ICON
+        SSDVoxelDefs.BlockId.OVEN:
+            return OVEN_ICON
+        SSDVoxelDefs.BlockId.FERMENTER:
+            return FERMENTER_ICON
+        SSDVoxelDefs.BlockId.BLENDER:
+            return BLENDER_ICON
+        SSDVoxelDefs.BlockId.DISPLAY_CASE:
+            return DISPLAY_CASE_ICON
         ITEM_SHIRT_RED:
             return SHIRT_TEXTURE
         ITEM_HOODIE_RED:
@@ -412,7 +845,7 @@ static func resolve_item_token(token: String) -> int:
             return ITEM_RAW_CHICKEN
         "cooked_mutton", "mutton":
             return ITEM_COOKED_MUTTON
-        "cooked_beef", "beef", "steak":
+        "cooked_beef", "beef":
             return ITEM_COOKED_BEEF
         "cooked_chicken", "chicken":
             return ITEM_COOKED_CHICKEN
@@ -440,6 +873,114 @@ static func resolve_item_token(token: String) -> int:
             return ITEM_COW_SPAWN_EGG
         "chicken_spawn_egg":
             return ITEM_CHICKEN_SPAWN_EGG
+        "carrot":
+            return ITEM_CARROT
+        "potato":
+            return ITEM_POTATO
+        "rice":
+            return ITEM_RICE
+        "cooked_rice":
+            return ITEM_COOKED_RICE
+        "tomato":
+            return ITEM_TOMATO
+        "cheese":
+            return ITEM_CHEESE
+        "flour":
+            return ITEM_FLOUR
+        "dough":
+            return ITEM_DOUGH
+        "raw_cheese_pizza":
+            return ITEM_RAW_CHEESE_PIZZA
+        "cheese_pizza", "pizza":
+            return ITEM_CHEESE_PIZZA
+        "strawberry":
+            return ITEM_STRAWBERRY
+        "blueberry":
+            return ITEM_BLUEBERRY
+        "blackberry":
+            return ITEM_BLACKBERRY
+        "mango":
+            return ITEM_MANGO
+        "smoothie":
+            return ITEM_SMOOTHIE
+        "cucumber":
+            return ITEM_CUCUMBER
+        "pickles":
+            return ITEM_PICKLES
+        "mashed_potatoes":
+            return ITEM_MASHED_POTATOES
+        "rice_and_chicken":
+            return ITEM_RICE_AND_CHICKEN
+        "pan":
+            return ITEM_PAN
+        "pot":
+            return ITEM_POT
+        "cookie_dough":
+            return ITEM_COOKIE_DOUGH
+        "chocolate_chip_cookie", "cookie":
+            return ITEM_CHOCOLATE_CHIP_COOKIE
+        "pizza_base":
+            return ITEM_PIZZA_BASE
+        "steak":
+            return ITEM_STEAK
+        "noodles":
+            return ITEM_NOODLES
+        "broth":
+            return ITEM_BROTH
+        "chicken_noodle_soup":
+            return ITEM_CHICKEN_NOODLE_SOUP
+        "mac_and_cheese":
+            return ITEM_MAC_AND_CHEESE
+        "ground_beef":
+            return ITEM_GROUND_BEEF
+        "sliced_tomato":
+            return ITEM_SLICED_TOMATO
+        "shredded_cheese":
+            return ITEM_SHREDDED_CHEESE
+        "baked_potato":
+            return ITEM_BAKED_POTATO
+        "wheat":
+            return ITEM_WHEAT
+        "pho":
+            return ITEM_PHO
+        "dads_spaghetti", "spaghetti":
+            return ITEM_DADS_SPAGHETTI
+        "meatloaf_mix":
+            return ITEM_MEATLOAF_MIX
+        "meatloaf":
+            return ITEM_MEATLOAF
+        "raw_meat_lovers_pizza":
+            return ITEM_RAW_MEAT_LOVERS_PIZZA
+        "meat_lovers_pizza":
+            return ITEM_MEAT_LOVERS_PIZZA
+        "chicken_alfredo", "alfredo":
+            return ITEM_CHICKEN_ALFREDO
+        "breadsticks":
+            return ITEM_BREADSTICKS
+        "italian_cheese_bread_dough":
+            return ITEM_ITALIAN_CHEESE_BREAD_DOUGH
+        "italian_cheese_bread":
+            return ITEM_ITALIAN_CHEESE_BREAD
+        "footlong_sandwich", "sandwich":
+            return ITEM_FOOTLONG_SANDWICH
+        "spring_rolls":
+            return ITEM_SPRING_ROLLS
+        "caramel_frappe", "frappe":
+            return ITEM_CARAMEL_FRAPPE
+        "red_velvet_cookie_dough":
+            return ITEM_RED_VELVET_COOKIE_DOUGH
+        "red_velvet_cookie":
+            return ITEM_RED_VELVET_COOKIE
+        "prep_table":
+            return SSDVoxelDefs.BlockId.PREP_TABLE
+        "stove":
+            return SSDVoxelDefs.BlockId.STOVE
+        "oven":
+            return SSDVoxelDefs.BlockId.OVEN
+        "fermenter":
+            return SSDVoxelDefs.BlockId.FERMENTER
+        "blender":
+            return SSDVoxelDefs.BlockId.BLENDER
         "red_shirt", "shirt":
             return ITEM_SHIRT_RED
         "red_hoodie", "hoodie", "jacket":
@@ -468,6 +1009,12 @@ static func get_all_creative_item_ids() -> PackedInt32Array:
         ITEM_CRAFTING_TABLE,
         ITEM_COBBLESTONE,
         ITEM_FURNACE,
+        SSDVoxelDefs.BlockId.PREP_TABLE,
+        SSDVoxelDefs.BlockId.STOVE,
+        SSDVoxelDefs.BlockId.OVEN,
+        SSDVoxelDefs.BlockId.FERMENTER,
+        SSDVoxelDefs.BlockId.BLENDER,
+        SSDVoxelDefs.BlockId.DISPLAY_CASE,
         ITEM_SHIRT_RED,
         ITEM_HOODIE_RED,
         ITEM_WOOL,
@@ -491,6 +1038,55 @@ static func get_all_creative_item_ids() -> PackedInt32Array:
         ITEM_COOKED_MUTTON,
         ITEM_COOKED_BEEF,
         ITEM_COOKED_CHICKEN,
+        ITEM_CARROT,
+        ITEM_POTATO,
+        ITEM_RICE,
+        ITEM_COOKED_RICE,
+        ITEM_TOMATO,
+        ITEM_CHEESE,
+        ITEM_FLOUR,
+        ITEM_DOUGH,
+        ITEM_RAW_CHEESE_PIZZA,
+        ITEM_CHEESE_PIZZA,
+        ITEM_STRAWBERRY,
+        ITEM_BLUEBERRY,
+        ITEM_BLACKBERRY,
+        ITEM_MANGO,
+        ITEM_SMOOTHIE,
+        ITEM_CUCUMBER,
+        ITEM_PICKLES,
+        ITEM_MASHED_POTATOES,
+        ITEM_RICE_AND_CHICKEN,
+        ITEM_PAN,
+        ITEM_POT,
+        ITEM_COOKIE_DOUGH,
+        ITEM_CHOCOLATE_CHIP_COOKIE,
+        ITEM_PIZZA_BASE,
+        ITEM_STEAK,
+        ITEM_NOODLES,
+        ITEM_BROTH,
+        ITEM_CHICKEN_NOODLE_SOUP,
+        ITEM_MAC_AND_CHEESE,
+        ITEM_GROUND_BEEF,
+        ITEM_SLICED_TOMATO,
+        ITEM_SHREDDED_CHEESE,
+        ITEM_BAKED_POTATO,
+        ITEM_WHEAT,
+        ITEM_PHO,
+        ITEM_DADS_SPAGHETTI,
+        ITEM_MEATLOAF_MIX,
+        ITEM_MEATLOAF,
+        ITEM_RAW_MEAT_LOVERS_PIZZA,
+        ITEM_MEAT_LOVERS_PIZZA,
+        ITEM_CHICKEN_ALFREDO,
+        ITEM_BREADSTICKS,
+        ITEM_ITALIAN_CHEESE_BREAD_DOUGH,
+        ITEM_ITALIAN_CHEESE_BREAD,
+        ITEM_FOOTLONG_SANDWICH,
+        ITEM_SPRING_ROLLS,
+        ITEM_CARAMEL_FRAPPE,
+        ITEM_RED_VELVET_COOKIE_DOUGH,
+        ITEM_RED_VELVET_COOKIE,
         ITEM_SHEEP_SPAWN_EGG,
         ITEM_COW_SPAWN_EGG,
         ITEM_CHICKEN_SPAWN_EGG,
@@ -516,6 +1112,12 @@ static func get_creative_item_ids(category_index: int) -> PackedInt32Array:
                 ITEM_CRAFTING_TABLE,
                 ITEM_COBBLESTONE,
                 ITEM_FURNACE,
+                SSDVoxelDefs.BlockId.PREP_TABLE,
+                SSDVoxelDefs.BlockId.STOVE,
+                SSDVoxelDefs.BlockId.OVEN,
+                SSDVoxelDefs.BlockId.FERMENTER,
+                SSDVoxelDefs.BlockId.BLENDER,
+                SSDVoxelDefs.BlockId.DISPLAY_CASE,
             ])
         CREATIVE_CATEGORY_ITEMS:
             return PackedInt32Array([
@@ -529,7 +1131,6 @@ static func get_creative_item_ids(category_index: int) -> PackedInt32Array:
                 ITEM_IRON_CHUNK,
                 ITEM_IRON_INGOT,
                 ITEM_GLASS_BOTTLE,
-                ITEM_WATER_BOTTLE,
             ])
         CREATIVE_CATEGORY_TOOLS:
             return PackedInt32Array([
@@ -548,7 +1149,54 @@ static func get_creative_item_ids(category_index: int) -> PackedInt32Array:
                 ITEM_COOKED_MUTTON,
                 ITEM_COOKED_BEEF,
                 ITEM_COOKED_CHICKEN,
+                ITEM_STEAK,
                 ITEM_WATER_BOTTLE,
+                ITEM_CARROT,
+                ITEM_POTATO,
+                ITEM_RICE,
+                ITEM_COOKED_RICE,
+                ITEM_TOMATO,
+                ITEM_SLICED_TOMATO,
+                ITEM_CHEESE,
+                ITEM_WHEAT,
+                ITEM_SHREDDED_CHEESE,
+                ITEM_FLOUR,
+                ITEM_DOUGH,
+                ITEM_NOODLES,
+                ITEM_BROTH,
+                ITEM_PIZZA_BASE,
+                ITEM_RAW_CHEESE_PIZZA,
+                ITEM_CHEESE_PIZZA,
+                ITEM_STRAWBERRY,
+                ITEM_BLUEBERRY,
+                ITEM_BLACKBERRY,
+                ITEM_MANGO,
+                ITEM_SMOOTHIE,
+                ITEM_CUCUMBER,
+                ITEM_PICKLES,
+                ITEM_MASHED_POTATOES,
+                ITEM_RICE_AND_CHICKEN,
+                ITEM_COOKIE_DOUGH,
+                ITEM_CHOCOLATE_CHIP_COOKIE,
+                ITEM_MAC_AND_CHEESE,
+                ITEM_CHICKEN_NOODLE_SOUP,
+                ITEM_GROUND_BEEF,
+                ITEM_BAKED_POTATO,
+                ITEM_PHO,
+                ITEM_DADS_SPAGHETTI,
+                ITEM_MEATLOAF_MIX,
+                ITEM_MEATLOAF,
+                ITEM_RAW_MEAT_LOVERS_PIZZA,
+                ITEM_MEAT_LOVERS_PIZZA,
+                ITEM_CHICKEN_ALFREDO,
+                ITEM_BREADSTICKS,
+                ITEM_ITALIAN_CHEESE_BREAD_DOUGH,
+                ITEM_ITALIAN_CHEESE_BREAD,
+                ITEM_FOOTLONG_SANDWICH,
+                ITEM_SPRING_ROLLS,
+                ITEM_CARAMEL_FRAPPE,
+                ITEM_RED_VELVET_COOKIE_DOUGH,
+                ITEM_RED_VELVET_COOKIE,
             ])
         CREATIVE_CATEGORY_SPAWN_EGGS:
             return PackedInt32Array([
@@ -556,10 +1204,21 @@ static func get_creative_item_ids(category_index: int) -> PackedInt32Array:
                 ITEM_COW_SPAWN_EGG,
                 ITEM_CHICKEN_SPAWN_EGG,
             ])
+        CREATIVE_CATEGORY_COOKING:
+            return PackedInt32Array([
+                SSDVoxelDefs.BlockId.PREP_TABLE,
+                SSDVoxelDefs.BlockId.STOVE,
+                SSDVoxelDefs.BlockId.OVEN,
+                SSDVoxelDefs.BlockId.FERMENTER,
+                SSDVoxelDefs.BlockId.BLENDER,
+                SSDVoxelDefs.BlockId.DISPLAY_CASE,
+                ITEM_PAN,
+                ITEM_POT,
+            ])
         _:
             return PackedInt32Array([])
 
-static func is_tool(item_id: int) -> bool:
+static func is_tool_item(item_id: int) -> bool:
     return get_tool_type(item_id) != ""
 
 static func get_tool_type(item_id: int) -> String:
@@ -598,6 +1257,32 @@ static func is_consumable(item_id: int) -> bool:
 
 static func get_hunger_restore(item_id: int) -> float:
     match item_id:
+        ITEM_CARROT:
+            return 8.0
+        ITEM_STRAWBERRY, ITEM_BLUEBERRY, ITEM_BLACKBERRY:
+            return 4.0
+        ITEM_MANGO:
+            return 10.0
+        ITEM_PICKLES:
+            return 6.0
+        ITEM_CHOCOLATE_CHIP_COOKIE:
+            return 12.0
+        ITEM_MASHED_POTATOES:
+            return 20.0
+        ITEM_BAKED_POTATO:
+            return 18.0
+        ITEM_COOKED_RICE:
+            return 14.0
+        ITEM_RICE_AND_CHICKEN:
+            return 28.0
+        ITEM_CHEESE_PIZZA:
+            return 32.0
+        ITEM_STEAK:
+            return 30.0
+        ITEM_MAC_AND_CHEESE:
+            return 30.0
+        ITEM_CHICKEN_NOODLE_SOUP:
+            return 26.0
         ITEM_RAW_MUTTON:
             return 10.0
         ITEM_RAW_BEEF:
@@ -610,13 +1295,39 @@ static func get_hunger_restore(item_id: int) -> float:
             return 26.0
         ITEM_COOKED_CHICKEN:
             return 18.0
+        ITEM_PHO:
+            return 32.0
+        ITEM_DADS_SPAGHETTI:
+            return 34.0
+        ITEM_MEATLOAF:
+            return 36.0
+        ITEM_MEAT_LOVERS_PIZZA:
+            return 38.0
+        ITEM_CHICKEN_ALFREDO:
+            return 34.0
+        ITEM_BREADSTICKS:
+            return 14.0
+        ITEM_ITALIAN_CHEESE_BREAD:
+            return 26.0
+        ITEM_FOOTLONG_SANDWICH:
+            return 40.0
+        ITEM_SPRING_ROLLS:
+            return 18.0
+        ITEM_RED_VELVET_COOKIE:
+            return 14.0
         _:
             return 0.0
 
 static func get_thirst_restore(item_id: int) -> float:
     match item_id:
+        ITEM_SMOOTHIE:
+            return 22.0
         ITEM_WATER_BOTTLE:
             return 34.0
+        ITEM_BROTH:
+            return 12.0
+        ITEM_CHICKEN_NOODLE_SOUP:
+            return 18.0
         ITEM_RAW_CHICKEN:
             return 2.0
         ITEM_RAW_BEEF:
@@ -629,24 +1340,54 @@ static func get_thirst_restore(item_id: int) -> float:
             return 2.0
         ITEM_COOKED_MUTTON:
             return 2.0
+        ITEM_PHO:
+            return 20.0
+        ITEM_CHICKEN_ALFREDO:
+            return 8.0
+        ITEM_CARAMEL_FRAPPE:
+            return 26.0
         _:
             return 0.0
 
 static func get_stamina_restore(item_id: int) -> float:
     match item_id:
+        ITEM_SMOOTHIE:
+            return 16.0
         ITEM_WATER_BOTTLE:
             return 10.0
         ITEM_COOKED_BEEF:
             return 7.0
+        ITEM_STEAK:
+            return 10.0
+        ITEM_MAC_AND_CHEESE:
+            return 4.0
         ITEM_COOKED_MUTTON:
             return 6.0
         ITEM_COOKED_CHICKEN:
             return 5.0
+        ITEM_PHO:
+            return 8.0
+        ITEM_DADS_SPAGHETTI:
+            return 6.0
+        ITEM_MEATLOAF:
+            return 9.0
+        ITEM_MEAT_LOVERS_PIZZA:
+            return 8.0
+        ITEM_CHICKEN_ALFREDO:
+            return 7.0
+        ITEM_FOOTLONG_SANDWICH:
+            return 12.0
+        ITEM_CARAMEL_FRAPPE:
+            return 18.0
+        ITEM_RED_VELVET_COOKIE:
+            return 6.0
         _:
             return 0.0
 
 static func get_consumed_return_item_id(item_id: int) -> int:
     if item_id == ITEM_WATER_BOTTLE:
+        return ITEM_GLASS_BOTTLE
+    if item_id == ITEM_SMOOTHIE:
         return ITEM_GLASS_BOTTLE
     return ITEM_AIR
 

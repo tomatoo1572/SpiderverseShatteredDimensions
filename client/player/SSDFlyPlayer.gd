@@ -23,7 +23,7 @@ enum CameraMode {
 @export var third_person_shoulder_offset: Vector3 = Vector3(0.62, -0.02, 0.0)
 @export var world_model_offset: Vector3 = Vector3(0.0, 0.24, 0.0)
 @export var first_person_model_offset: Vector3 = Vector3(0.0, -1.66, 0.02)
-@export var first_person_camera_offset: Vector3 = Vector3.ZERO
+@export var first_person_camera_offset: Vector3 = Vector3(0.0, 0.04, -0.12)
 @export var jump_stamina_cost: float = 4.0
 
 @onready var _pivot: Node3D = $Pivot as Node3D
@@ -81,8 +81,8 @@ func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseMotion:
         var motion: InputEventMouseMotion = event as InputEventMouseMotion
         if _camera_mode == CameraMode.THIRD_PERSON and Input.is_action_pressed("camera_freelook"):
-            _freelook_yaw = clampf(_freelook_yaw - (motion.relative.x * mouse_sensitivity * 0.85), deg_to_rad(-160.0), deg_to_rad(160.0))
-            _freelook_pitch = clampf(_freelook_pitch - (motion.relative.y * mouse_sensitivity * 0.85), deg_to_rad(-55.0), deg_to_rad(75.0))
+            _freelook_yaw = wrapf(_freelook_yaw - (motion.relative.x * mouse_sensitivity * 0.85), -PI, PI)
+            _freelook_pitch = clampf(_freelook_pitch - (motion.relative.y * mouse_sensitivity * 0.85), deg_to_rad(-75.0), deg_to_rad(75.0))
         else:
             rotate_y(-motion.relative.x * mouse_sensitivity)
             _pitch = clampf(_pitch - (motion.relative.y * mouse_sensitivity), deg_to_rad(-89.0), deg_to_rad(89.0))
@@ -207,7 +207,7 @@ func _update_camera_transform() -> void:
     if _camera_mode == CameraMode.FIRST_PERSON:
         _camera.position = first_person_camera_offset
         _camera.rotation = Vector3.ZERO
-        _camera.cull_mask = 1 | 4
+        _camera.cull_mask = 1 | 2 | 4
         return
 
     _camera.cull_mask = 1 | 2

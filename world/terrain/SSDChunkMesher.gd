@@ -60,6 +60,13 @@ static func _build_surface_arrays_impl(chunk_coords: Vector2i, chunk_data: SSDCh
 				var world_z: int = base_block_z + local_z
 				var base_position: Vector3 = Vector3(float(local_x), float(local_y), float(local_z)) * SSDChunkConfig.VOXEL_SIZE
 				var mesh_target: Dictionary = transparent if _is_transparent_block(block_id) else opaque
+				var custom_mesh_kind: String = SSDVoxelDefs.get_custom_mesh_kind(block_id)
+				if custom_mesh_kind == "cross":
+					_append_cross_plant(mesh_target, base_position, block_id, world_x, local_y, world_z)
+					continue
+				elif custom_mesh_kind == "bush":
+					_append_low_cube(mesh_target, base_position, block_id, world_x, local_y, world_z)
+					continue
 
 				for face_index: int in range(6):
 					var direction: Vector3i = FACE_DIRECTIONS[face_index]
@@ -130,7 +137,7 @@ static func _get_generated_neighbor_block(chunk_data: SSDChunkData, height_cache
 	return SSDVoxelDefs.BlockId.AIR
 
 static func _is_transparent_block(block_id: int) -> bool:
-	return SSDVoxelDefs.is_fluid(block_id) or block_id == SSDVoxelDefs.BlockId.GLASS
+	return SSDVoxelDefs.is_fluid(block_id) or block_id == SSDVoxelDefs.BlockId.GLASS or SSDVoxelDefs.get_custom_mesh_kind(block_id) != "cube" or block_id == SSDVoxelDefs.BlockId.MANGO_LEAVES
 
 static func _should_hide_face(current_block: int, neighbor_block: int, face_index: int) -> bool:
 	if not SSDVoxelDefs.is_renderable(neighbor_block):
@@ -142,6 +149,82 @@ static func _should_hide_face(current_block: int, neighbor_block: int, face_inde
 	if current_block == SSDVoxelDefs.BlockId.GLASS and neighbor_block == SSDVoxelDefs.BlockId.GLASS:
 		return true
 	return false
+
+static func _append_cross_plant(mesh_target: Dictionary, base_position: Vector3, block_id: int, world_x: int, world_y: int, world_z: int) -> void:
+	var height: float = SSDVoxelDefs.get_visual_height(block_id)
+	var size: float = SSDChunkConfig.VOXEL_SIZE
+	var quads: Array = [
+		[Vector3(0.15, 0.0, 0.15), Vector3(0.85, height, 0.85), Vector3(0.85, 0.0, 0.85), Vector3(0.15, height, 0.15)],
+		[Vector3(0.85, 0.0, 0.15), Vector3(0.15, height, 0.85), Vector3(0.15, 0.0, 0.85), Vector3(0.85, height, 0.15)],
+	]
+	for quad in quads:
+		var face_uvs: Array[Vector2] = _build_face_uvs(block_id, 2, world_x, world_y, world_z)
+		var vertices: PackedVector3Array = mesh_target["vertices"] as PackedVector3Array
+		var normals: PackedVector3Array = mesh_target["normals"] as PackedVector3Array
+		var colors: PackedColorArray = mesh_target["colors"] as PackedColorArray
+		var uvs: PackedVector2Array = mesh_target["uvs"] as PackedVector2Array
+		var indices: PackedInt32Array = mesh_target["indices"] as PackedInt32Array
+		var start: int = vertices.size()
+		var quad_vertices: Array[Vector3] = [quad[0], quad[1], quad[2], quad[3]]
+		for i: int in range(4):
+			vertices.push_back(base_position + (quad_vertices[i] * size))
+			normals.push_back(Vector3.UP)
+			colors.push_back(Color(1,1,1,1))
+			uvs.push_back(face_uvs[i])
+		indices.push_back(start + 0)
+		indices.push_back(start + 1)
+		indices.push_back(start + 2)
+		indices.push_back(start + 2)
+		indices.push_back(start + 1)
+		indices.push_back(start + 3)
+		indices.push_back(start + 2)
+		indices.push_back(start + 1)
+		indices.push_back(start + 0)
+		indices.push_back(start + 3)
+		indices.push_back(start + 1)
+		indices.push_back(start + 2)
+		mesh_target["vertices"] = vertices
+		mesh_target["normals"] = normals
+		mesh_target["colors"] = colors
+		mesh_target["uvs"] = uvs
+		mesh_target["indices"] = indices
+
+static func _append_low_cube(mesh_target: Dictionary, base_position: Vector3, block_id: int, world_x: int, world_y: int, world_z: int) -> void:
+	var height: float = SSDVoxelDefs.get_visual_height(block_id)
+	for face_index: int in range(6):
+		_append_low_cube_face(mesh_target, base_position, face_index, block_id, world_x, world_y, world_z, height)
+
+static func _append_low_cube_face(mesh_target: Dictionary, base_position: Vector3, face_index: int, block_id: int, world_x: int, world_y: int, world_z: int, height: float) -> void:
+	var face_vertices: Array = FACE_VERTICES[face_index]
+	var normal: Vector3 = FACE_NORMALS[face_index]
+	var shaded_color: Color = _get_shaded_color(block_id, face_index)
+	var face_uvs: Array[Vector2] = _build_face_uvs(block_id, face_index, world_x, world_y, world_z)
+	var vertices: PackedVector3Array = mesh_target["vertices"] as PackedVector3Array
+	var normals: PackedVector3Array = mesh_target["normals"] as PackedVector3Array
+	var colors: PackedColorArray = mesh_target["colors"] as PackedColorArray
+	var uvs: PackedVector2Array = mesh_target["uvs"] as PackedVector2Array
+	var indices: PackedInt32Array = mesh_target["indices"] as PackedInt32Array
+	var start: int = vertices.size()
+	for i: int in range(face_vertices.size()):
+		var v: Vector3 = face_vertices[i]
+		var adjusted: Vector3 = v
+		if adjusted.y > 0.5:
+			adjusted.y = height
+		vertices.push_back(base_position + (adjusted * SSDChunkConfig.VOXEL_SIZE))
+		normals.push_back(normal)
+		colors.push_back(shaded_color)
+		uvs.push_back(face_uvs[i])
+	indices.push_back(start + 0)
+	indices.push_back(start + 1)
+	indices.push_back(start + 2)
+	indices.push_back(start + 0)
+	indices.push_back(start + 2)
+	indices.push_back(start + 3)
+	mesh_target["vertices"] = vertices
+	mesh_target["normals"] = normals
+	mesh_target["colors"] = colors
+	mesh_target["uvs"] = uvs
+	mesh_target["indices"] = indices
 
 static func _append_face(mesh_target: Dictionary, collision_vertices: PackedVector3Array, collision_indices: PackedInt32Array, base_position: Vector3, face_index: int, block_id: int, world_x: int, world_y: int, world_z: int) -> void:
 	var face_vertices: Array = FACE_VERTICES[face_index]
@@ -194,7 +277,7 @@ static func _append_face(mesh_target: Dictionary, collision_vertices: PackedVect
 	indices.push_back(vertex_start + 3)
 	mesh_target["indices"] = indices
 
-static func _build_face_uvs(block_id: int, face_index: int, world_x: int, _world_y: int, world_z: int) -> Array[Vector2]:
+static func _build_face_uvs(block_id: int, face_index: int, _world_x: int, _world_y: int, _world_z: int) -> Array[Vector2]:
 	var uv_rect: Rect2 = SSDVoxelDefs.get_face_uv_rect(block_id, face_index)
 	if uv_rect.size.x <= 0.0 or uv_rect.size.y <= 0.0:
 		return [Vector2.ZERO, Vector2.ZERO, Vector2.ZERO, Vector2.ZERO]
@@ -210,18 +293,16 @@ static func _build_face_uvs(block_id: int, face_index: int, world_x: int, _world
 	]
 
 static func _get_shaded_color(block_id: int, face_index: int) -> Color:
-	var multiplier: float = 1.0
+	var multiplier: float = 0.97
 	match face_index:
 		2:
-			multiplier = 0.82
-		3:
-			multiplier = 0.50
-		0, 1:
-			multiplier = 0.70
-		4, 5:
-			multiplier = 0.64
-		_:
 			multiplier = 1.0
+		3:
+			multiplier = 0.94
+		0, 1, 4, 5:
+			multiplier = 0.97
+		_:
+			multiplier = 0.97
 	var alpha_value: float = 1.0
 	if block_id == SSDVoxelDefs.BlockId.GLASS:
 		alpha_value = 0.38

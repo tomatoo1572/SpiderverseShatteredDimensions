@@ -13,6 +13,8 @@ const SSD_ITEM_DROP_SCRIPT = preload("res://world/items/SSDItemDrop.gd")
 const SSD_GAME_MODE_SCRIPT = preload("res://shared/gameplay/SSDGameMode.gd")
 const SSD_CHAT_SCRIPT = preload("res://ui/SSDProximityChat.gd")
 const SSD_FURNACE_MANAGER_SCRIPT = preload("res://world/furnace/SSDFurnaceManager.gd")
+const SSD_COOKING_MANAGER_SCRIPT = preload("res://world/cooking/SSDCookingManager.gd")
+const SSD_DISPLAY_CASE_MANAGER_SCRIPT = preload("res://world/display/SSDDisplayCaseManager.gd")
 const SSD_MOB_SPAWNER_SCRIPT = preload("res://world/mobs/SSDPassiveMobSpawner.gd")
 const SSD_SCHEMATIC_MANAGER_SCRIPT = preload("res://shared/schematics/SSDSchematicManager.gd")
 const SSD_SCHEMATIC_PREVIEW_SCRIPT = preload("res://world/schematics/SSDSchematicPreview.gd")
@@ -39,6 +41,8 @@ var _item_drop_root: Node3D
 var _game_mode: SSDGameMode
 var _chat_ui: SSDProximityChat
 var _furnace_manager: SSDFurnaceManager
+var _cooking_manager: SSDCookingManager
+var _display_case_manager: SSDDisplayCaseManager
 var _mob_spawner: SSDPassiveMobSpawner
 var _schematic_manager: SSDSchematicManager
 var _schematic_preview: SSDSchematicPreview
@@ -132,6 +136,17 @@ func _ready() -> void:
 	add_child(_furnace_manager)
 	_inventory_ui.set_furnace_manager(_furnace_manager)
 
+	_cooking_manager = SSD_COOKING_MANAGER_SCRIPT.new() as SSDCookingManager
+	_cooking_manager.name = "CookingManager"
+	add_child(_cooking_manager)
+	_cooking_manager.set_world(world)
+	_inventory_ui.set_cooking_manager(_cooking_manager)
+
+	_display_case_manager = SSD_DISPLAY_CASE_MANAGER_SCRIPT.new() as SSDDisplayCaseManager
+	_display_case_manager.name = "DisplayCaseManager"
+	add_child(_display_case_manager)
+	_display_case_manager.set_world(world)
+
 	_mob_spawner = SSD_MOB_SPAWNER_SCRIPT.new() as SSDPassiveMobSpawner
 	_mob_spawner.name = "PassiveMobSpawner"
 	add_child(_mob_spawner)
@@ -150,7 +165,7 @@ func _ready() -> void:
 	_interactor = SSD_BLOCK_INTERACTOR_SCRIPT.new() as SSDBlockInteractor
 	_interactor.name = "BlockInteractor"
 	add_child(_interactor)
-	_interactor.set_targets(world, player, player_camera, selector, _hotbar, _inventory, _game_mode, _furnace_manager)
+	_interactor.set_targets(world, player, player_camera, selector, _hotbar, _inventory, _game_mode, _furnace_manager, _cooking_manager, _display_case_manager)
 	_interactor.spawn_item_drop.connect(_spawn_item_drop)
 	_interactor.request_spawn_mob.connect(_spawn_mob_at)
 	_interactor.request_open_crafting_table.connect(func() -> void:
@@ -161,6 +176,11 @@ func _ready() -> void:
 	_interactor.request_open_furnace.connect(func(block_pos: Vector3i) -> void:
 		if _inventory_ui != null:
 			_inventory_ui.open_furnace(block_pos)
+			_apply_ui_mode(true)
+	)
+	_interactor.request_open_cooking_station.connect(func(block_pos: Vector3i, station_type: String) -> void:
+		if _inventory_ui != null:
+			_inventory_ui.open_cooking_station(block_pos, station_type)
 			_apply_ui_mode(true)
 	)
 
@@ -401,11 +421,11 @@ func _send_local_player_state(force_send: bool) -> void:
 	var held_item_id: int = _inventory.get_selected_block_id() if _inventory != null else SSDItemDefs.ITEM_AIR
 	var yaw: float = player.get_body_yaw_radians()
 	var pitch: float = player.get_pitch_radians()
-	var position: Vector3 = player.global_position
+	var player_position: Vector3 = player.global_position
 	if multiplayer.is_server():
-		rpc("_rpc_receive_player_state", 1, position, yaw, pitch, held_item_id)
+		rpc("_rpc_receive_player_state", 1, player_position, yaw, pitch, held_item_id)
 	else:
-		rpc_id(1, "_rpc_submit_player_state", position, yaw, pitch, held_item_id)
+		rpc_id(1, "_rpc_submit_player_state", player_position, yaw, pitch, held_item_id)
 
 func _spawn_or_update_remote_player(peer_id: int, profile: Dictionary, world_position: Vector3, yaw: float, pitch: float, held_item_id: int) -> void:
 	if peer_id == multiplayer.get_unique_id():
@@ -444,11 +464,11 @@ func request_break_block_from_interactor(block_pos: Vector3i, old_block: int, su
 		return true
 	return _apply_block_break_authoritative(block_pos, old_block, survival, _is_multiplayer_host())
 
-func request_place_block_from_interactor(block_pos: Vector3i, item_id: int, _survival: bool) -> bool:
+func request_place_block_from_interactor(block_pos: Vector3i, item_id: int, _survival: bool, facing_deg: float = 0.0) -> bool:
 	if _is_multiplayer_client():
-		rpc_id(1, "_rpc_request_place_block", block_pos.x, block_pos.y, block_pos.z, item_id)
+		rpc_id(1, "_rpc_request_place_block", block_pos.x, block_pos.y, block_pos.z, item_id, facing_deg)
 		return true
-	return _apply_block_place_authoritative(block_pos, item_id, _is_multiplayer_host())
+	return _apply_block_place_authoritative(block_pos, item_id, _is_multiplayer_host(), facing_deg)
 
 func _apply_block_break_authoritative(block_pos: Vector3i, old_block: int, survival: bool, broadcast_change: bool) -> bool:
 	if old_block == SSDVoxelDefs.BlockId.AIR:
@@ -457,6 +477,9 @@ func _apply_block_break_authoritative(block_pos: Vector3i, old_block: int, survi
 		return false
 	if old_block == SSDVoxelDefs.BlockId.FURNACE and _furnace_manager != null:
 		_furnace_manager.remove_state(block_pos)
+	var cooking_station_type: String = SSDCooking.get_station_type_for_block(old_block)
+	if not cooking_station_type.is_empty() and _cooking_manager != null:
+		_cooking_manager.remove_state(block_pos)
 	if survival:
 		var dropped_item_id: int = _resolve_drop_for_network_break(old_block)
 		if dropped_item_id != SSDItemDefs.ITEM_AIR:
@@ -467,11 +490,17 @@ func _apply_block_break_authoritative(block_pos: Vector3i, old_block: int, survi
 		rpc("_rpc_apply_block_update", block_pos.x, block_pos.y, block_pos.z, SSDVoxelDefs.BlockId.AIR)
 	return true
 
-func _apply_block_place_authoritative(block_pos: Vector3i, item_id: int, broadcast_change: bool) -> bool:
+func _apply_block_place_authoritative(block_pos: Vector3i, item_id: int, broadcast_change: bool, facing_deg: float = 0.0) -> bool:
+	if item_id == SSDVoxelDefs.BlockId.DISPLAY_CASE:
+		var upper_block: int = world.get_block_global(block_pos.x, block_pos.y + 1, block_pos.z)
+		if upper_block != SSDVoxelDefs.BlockId.AIR and not SSDVoxelDefs.is_fluid(upper_block):
+			return false
 	if not world.request_set_block_global(block_pos.x, block_pos.y, block_pos.z, item_id):
 		return false
+	_apply_oriented_block_state(block_pos, item_id, facing_deg)
 	if broadcast_change and multiplayer.multiplayer_peer != null:
 		rpc("_rpc_apply_block_update", block_pos.x, block_pos.y, block_pos.z, item_id)
+		rpc("_rpc_apply_block_facing", block_pos.x, block_pos.y, block_pos.z, item_id, facing_deg)
 	return true
 
 func _resolve_drop_for_network_break(block_id: int) -> int:
@@ -535,24 +564,24 @@ func _rpc_spawn_remote_peer(peer_id: int, player_name_value: String, profile: Di
 		_chat_ui.add_system_message("%s joined the game." % player_name_value)
 
 @rpc("any_peer", "call_remote", "unreliable")
-func _rpc_submit_player_state(position: Vector3, yaw: float, pitch: float, held_item_id: int) -> void:
+func _rpc_submit_player_state(world_position: Vector3, yaw: float, pitch: float, held_item_id: int) -> void:
 	if not multiplayer.is_server():
 		return
 	var sender_id: int = multiplayer.get_remote_sender_id()
 	_peer_states[sender_id] = {
-		"position": position,
+		"position": world_position,
 		"yaw": yaw,
 		"pitch": pitch,
 		"held_item_id": held_item_id,
 	}
-	_spawn_or_update_remote_player(sender_id, _peer_profiles.get(sender_id, {}), position, yaw, pitch, held_item_id)
-	rpc("_rpc_receive_player_state", sender_id, position, yaw, pitch, held_item_id)
+	_spawn_or_update_remote_player(sender_id, _peer_profiles.get(sender_id, {}), world_position, yaw, pitch, held_item_id)
+	rpc("_rpc_receive_player_state", sender_id, world_position, yaw, pitch, held_item_id)
 
 @rpc("authority", "call_remote", "unreliable")
-func _rpc_receive_player_state(peer_id: int, position: Vector3, yaw: float, pitch: float, held_item_id: int) -> void:
+func _rpc_receive_player_state(peer_id: int, world_position: Vector3, yaw: float, pitch: float, held_item_id: int) -> void:
 	if peer_id == multiplayer.get_unique_id():
 		return
-	_spawn_or_update_remote_player(peer_id, _peer_profiles.get(peer_id, {}), position, yaw, pitch, held_item_id)
+	_spawn_or_update_remote_player(peer_id, _peer_profiles.get(peer_id, {}), world_position, yaw, pitch, held_item_id)
 
 @rpc("any_peer", "call_remote", "reliable")
 func _rpc_submit_chat(message: String, sender_position: Vector3) -> void:
@@ -577,14 +606,29 @@ func _rpc_request_break_block(block_x: int, block_y: int, block_z: int, old_bloc
 	_apply_block_break_authoritative(Vector3i(block_x, block_y, block_z), current_block if current_block != SSDVoxelDefs.BlockId.AIR else old_block, survival, true)
 
 @rpc("any_peer", "call_remote", "reliable")
-func _rpc_request_place_block(block_x: int, block_y: int, block_z: int, item_id: int) -> void:
+func _rpc_request_place_block(block_x: int, block_y: int, block_z: int, item_id: int, facing_deg: float = 0.0) -> void:
 	if not multiplayer.is_server():
 		return
-	_apply_block_place_authoritative(Vector3i(block_x, block_y, block_z), item_id, true)
+	_apply_block_place_authoritative(Vector3i(block_x, block_y, block_z), item_id, true, facing_deg)
 
 @rpc("authority", "call_remote", "reliable")
 func _rpc_apply_block_update(block_x: int, block_y: int, block_z: int, block_id: int) -> void:
 	world.request_set_block_global(block_x, block_y, block_z, block_id)
+
+
+@rpc("authority", "call_remote", "reliable")
+func _rpc_apply_block_facing(block_x: int, block_y: int, block_z: int, item_id: int, facing_deg: float) -> void:
+	_apply_oriented_block_state(Vector3i(block_x, block_y, block_z), item_id, facing_deg)
+
+func _apply_oriented_block_state(block_pos: Vector3i, item_id: int, facing_deg: float) -> void:
+	if item_id == SSDVoxelDefs.BlockId.DISPLAY_CASE and _display_case_manager != null:
+		_display_case_manager.ensure_visual(block_pos)
+		_display_case_manager.set_block_facing(block_pos, facing_deg)
+		return
+	var station_type: String = SSDCooking.get_station_type_for_block(item_id)
+	if _cooking_manager != null and (station_type == SSDCooking.STATION_STOVE or station_type == SSDCooking.STATION_OVEN):
+		_cooking_manager.set_block_facing(block_pos, station_type, facing_deg)
+
 
 @rpc("authority", "call_remote", "reliable")
 func _rpc_apply_time_sync(hours: float) -> void:
@@ -611,7 +655,7 @@ func _handle_chat_command(command_text: String) -> void:
 		"help":
 			_chat_ui.add_system_message("/gm survival|creative | /time set day|noon|night|midnight|HH:MM")
 			_chat_ui.add_system_message("/tp x y z | /give SSD:grass 64 | /give SSD:furnace 1 | /give SSD:raw_beef 4 | /summon sheep")
-			_chat_ui.add_system_message("/schem pos1|pos2|save name|load name|preview|commit|rotate 90|list|info|clear | /clear | /rd value")
+			_chat_ui.add_system_message("/schem pos1|pos2|save name|load name|preview|commit|rotate 90|list|info|clear | /clear | /rd value | /cropgrow value [ticks]")
 		"time":
 			_handle_time_command(parts)
 		"tp":
@@ -638,6 +682,8 @@ func _handle_chat_command(command_text: String) -> void:
 				_chat_ui.add_system_message("Render distance set to %d." % new_distance)
 		"schem", "schematic":
 			_handle_schematic_command(parts)
+		"cropgrow", "cropgrowth":
+			_handle_crop_grow_command(parts)
 		_:
 			_chat_ui.add_system_message("Unknown command: %s" % root)
 
@@ -724,6 +770,23 @@ func _handle_summon_command(parts: PackedStringArray) -> void:
 	_spawn_mob_at(mob_type, spawn_position)
 	_chat_ui.add_system_message("Summoned %s." % mob_type)
 
+
+func _handle_crop_grow_command(parts: PackedStringArray) -> void:
+	if world == null:
+		return
+	if parts.size() < 2:
+		_chat_ui.add_system_message("Usage: /cropgrow multiplier [bonus_ticks]")
+		return
+	var multiplier: float = clampf(float(parts[1].to_float()), 0.0, 64.0)
+	if world.has_method("set_crop_growth_speed_multiplier"):
+		world.set_crop_growth_speed_multiplier(multiplier)
+	var bonus_ticks: int = 0
+	if parts.size() >= 3:
+		bonus_ticks = max(0, int(parts[2].to_int()))
+		if world.has_method("accelerate_crop_growth_ticks"):
+			world.accelerate_crop_growth_ticks(bonus_ticks)
+	_chat_ui.add_system_message("Crop growth speed set to x%.2f%s" % [multiplier, "" if bonus_ticks <= 0 else " with %d instant growth ticks." % bonus_ticks])
+
 func _clear_inventory_contents() -> void:
 	if _inventory == null:
 		return
@@ -731,12 +794,19 @@ func _clear_inventory_contents() -> void:
 		_inventory.set_slot(i, SSDItemDefs.ITEM_AIR, 0)
 
 func _on_game_mode_changed(_mode: int, mode_name: String) -> void:
+	var creative_enabled: bool = mode_name == "creative"
 	if player != null:
-		player.set_flight_allowed(mode_name == "creative")
+		player.set_flight_allowed(creative_enabled)
+	if _vitals != null:
+		_vitals.set_survival_enabled(not creative_enabled)
+		if creative_enabled:
+			_vitals.restore_full()
 	if _chat_ui != null:
 		_chat_ui.add_system_message("Gamemode set to %s" % mode_name.capitalize())
 	if _inventory_ui != null:
 		_inventory_ui.set_game_mode(_game_mode)
+	if _hotbar != null:
+		_hotbar.set_vitals(_vitals)
 
 
 func _on_mob_spawned(mob: SSDPassiveMob) -> void:

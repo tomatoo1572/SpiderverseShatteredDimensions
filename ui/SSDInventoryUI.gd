@@ -3,6 +3,8 @@ class_name SSDInventoryUI
 
 signal request_drop_stack(block_id: int, count: int)
 
+const SSD_COOKING_SCRIPT = preload("res://shared/gameplay/SSDCooking.gd")
+
 const SSD_HOTBAR_BLOCK_ICON_SCRIPT = preload("res://ui/SSDHotbarBlockIcon.gd")
 const SSD_PLAYER_PREVIEW_SCRIPT = preload("res://ui/SSDPlayerPreview.gd")
 const SSD_CRAFTING_SCRIPT = preload("res://shared/gameplay/SSDCrafting.gd")
@@ -17,6 +19,7 @@ var _inventory: SSDInventory
 var _game_mode: SSDGameMode
 var _world: SSDWorld
 var _furnace_manager: SSDFurnaceManager
+var _cooking_manager: SSDCookingManager
 var _vitals: SSDVitals
 
 var _dimmer: ColorRect
@@ -100,6 +103,11 @@ var _furnace_slot_counts: Array[Label] = []
 var _furnace_burn_fill: ColorRect
 var _furnace_cook_fill: ColorRect
 var _open_furnace_pos: Vector3i = Vector3i.ZERO
+var _open_processing_mode: String = ""
+var _furnace_title_label: Label
+var _processing_slot_labels: Array[Label] = []
+var _processing_toggle_button: Button
+var _processing_status_label: Label
 
 var _right_drag_active: bool = false
 var _right_drag_targets: Dictionary = {}
@@ -149,6 +157,8 @@ func set_world(world: SSDWorld) -> void:
 func set_furnace_manager(furnace_manager: SSDFurnaceManager) -> void:
 	_furnace_manager = furnace_manager
 
+func set_cooking_manager(cooking_manager: SSDCookingManager) -> void:
+	_cooking_manager = cooking_manager
 
 func set_vitals(vitals: SSDVitals) -> void:
 	_vitals = vitals
@@ -199,8 +209,24 @@ func open_furnace(block_pos: Vector3i) -> void:
 	_set_tab(TAB_INVENTORY)
 	_craft3_panel.visible = false
 	_open_furnace_pos = block_pos
+	_open_processing_mode = "furnace"
 	if _furnace_panel != null:
 		_furnace_panel.visible = true
+	_refresh_processing_panel_labels()
+	_refresh_ui()
+
+func open_cooking_station(block_pos: Vector3i, station_type: String) -> void:
+	if _cooking_manager == null:
+		return
+	visible = true
+	_current_tab = TAB_INVENTORY
+	_set_tab(TAB_INVENTORY)
+	_craft3_panel.visible = false
+	_open_furnace_pos = block_pos
+	_open_processing_mode = station_type
+	if _furnace_panel != null:
+		_furnace_panel.visible = true
+	_refresh_processing_panel_labels()
 	_refresh_ui()
 
 func _process(_delta: float) -> void:
@@ -1180,11 +1206,11 @@ func _build_furnace_panel() -> void:
 	_furnace_panel.add_theme_stylebox_override("panel", _make_root_style())
 	add_child(_furnace_panel)
 
-	var title: Label = Label.new()
-	title.text = "Furnace"
-	title.position = Vector2(16.0, 12.0)
-	title.size = Vector2(120.0, 20.0)
-	_furnace_panel.add_child(title)
+	_furnace_title_label = Label.new()
+	_furnace_title_label.text = "Furnace"
+	_furnace_title_label.position = Vector2(16.0, 12.0)
+	_furnace_title_label.size = Vector2(180.0, 20.0)
+	_furnace_panel.add_child(_furnace_title_label)
 
 	var close_button: Button = Button.new()
 	close_button.text = "X"
@@ -1202,6 +1228,14 @@ func _build_furnace_panel() -> void:
 	_create_furnace_slot(0, Vector2(62.0, 82.0))
 	_create_furnace_slot(1, Vector2(62.0, 144.0))
 	_create_furnace_slot(2, Vector2(274.0, 112.0), true)
+	_processing_slot_labels.clear()
+	for pair in [["Ingredient", Vector2(62.0, 58.0)], ["Fuel", Vector2(62.0, 120.0)], ["Dish", Vector2(274.0, 88.0)]]:
+		var slot_label: Label = Label.new()
+		slot_label.text = str(pair[0])
+		slot_label.position = pair[1]
+		slot_label.size = Vector2(140.0, 18.0)
+		_furnace_panel.add_child(slot_label)
+		_processing_slot_labels.append(slot_label)
 
 	var burn_bg: ColorRect = ColorRect.new()
 	burn_bg.color = Color(0.14, 0.14, 0.14, 1.0)
@@ -1223,7 +1257,58 @@ func _build_furnace_panel() -> void:
 	_furnace_cook_fill.color = Color(0.96, 0.86, 0.24, 1.0)
 	_furnace_cook_fill.position = Vector2(172.0, 120.0)
 	_furnace_cook_fill.size = Vector2(0.0, 8.0)
+
 	_furnace_panel.add_child(_furnace_cook_fill)
+
+	_processing_toggle_button = Button.new()
+	_processing_toggle_button.position = Vector2(254.0, 116.0)
+	_processing_toggle_button.size = Vector2(104.0, 30.0)
+	_processing_toggle_button.focus_mode = Control.FOCUS_NONE
+	_processing_toggle_button.visible = false
+	_processing_toggle_button.pressed.connect(func() -> void:
+		var state_variant = _get_open_processing_state()
+		var cooking_state: SSDCookingState = state_variant as SSDCookingState
+		if cooking_state != null and cooking_state.can_toggle_active():
+			cooking_state.toggle_active()
+			_refresh_furnace_ui()
+	)
+	_furnace_panel.add_child(_processing_toggle_button)
+
+	_processing_status_label = Label.new()
+	_processing_status_label.position = Vector2(170.0, 152.0)
+	_processing_status_label.size = Vector2(188.0, 40.0)
+	_processing_status_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_processing_status_label.add_theme_font_size_override("font_size", 11)
+	_furnace_panel.add_child(_processing_status_label)
+
+func _refresh_processing_panel_labels() -> void:
+	if _furnace_title_label == null:
+		return
+	if _open_processing_mode == "" or _open_processing_mode == "furnace":
+		_furnace_title_label.text = "Furnace"
+		if _processing_slot_labels.size() >= 3:
+			_processing_slot_labels[0].text = "Input"
+			_processing_slot_labels[1].text = "Fuel"
+			_processing_slot_labels[2].text = "Output"
+		if _furnace_burn_fill != null:
+			_furnace_burn_fill.visible = true
+		if _processing_toggle_button != null:
+			_processing_toggle_button.visible = false
+		if _processing_status_label != null:
+			_processing_status_label.text = ""
+		return
+	_furnace_title_label.text = SSD_COOKING_SCRIPT.get_station_display_name(_open_processing_mode)
+	if _processing_slot_labels.size() >= 3:
+		_processing_slot_labels[0].text = "Ingredient"
+		_processing_slot_labels[1].text = SSD_COOKING_SCRIPT.get_station_secondary_label(_open_processing_mode)
+		_processing_slot_labels[2].text = "Dish"
+	if _furnace_burn_fill != null:
+		_furnace_burn_fill.visible = SSD_COOKING_SCRIPT.station_shows_heat_meter(_open_processing_mode)
+	if _processing_toggle_button != null:
+		_processing_toggle_button.visible = SSD_COOKING_SCRIPT.station_has_toggle(_open_processing_mode)
+		_processing_toggle_button.text = SSD_COOKING_SCRIPT.get_station_toggle_label(_open_processing_mode, false)
+	if _processing_status_label != null:
+		_processing_status_label.text = ""
 
 func _create_furnace_slot(slot_index: int, pos: Vector2, is_output: bool = false) -> void:
 	var panel: Panel = Panel.new()
@@ -1259,8 +1344,15 @@ func _get_open_furnace_state() -> SSDFurnaceState:
 		return null
 	return _furnace_manager.get_state(_open_furnace_pos)
 
+func _get_open_processing_state():
+	if _open_processing_mode == "" or _open_processing_mode == "furnace":
+		return _get_open_furnace_state()
+	if _cooking_manager == null:
+		return null
+	return _cooking_manager.get_state(_open_furnace_pos, _open_processing_mode)
+
 func _on_furnace_slot_gui_input(slot_index: int, event: InputEvent) -> void:
-	var state: SSDFurnaceState = _get_open_furnace_state()
+	var state = _get_open_processing_state()
 	if state == null or not (event is InputEventMouseButton):
 		return
 	var mb: InputEventMouseButton = event as InputEventMouseButton
@@ -1277,7 +1369,7 @@ func _on_furnace_slot_gui_input(slot_index: int, event: InputEvent) -> void:
 	elif mb.button_index == MOUSE_BUTTON_RIGHT:
 		_furnace_right_click(state, slot_index)
 
-func _furnace_left_click(state: SSDFurnaceState, slot_index: int) -> void:
+func _furnace_left_click(state, slot_index: int) -> void:
 	var slot_item_id: int = state.input_item_id if slot_index == 0 else state.fuel_item_id
 	var slot_count: int = state.input_count if slot_index == 0 else state.fuel_count
 	if _cursor_count <= 0 or _cursor_block_id == SSDItemDefs.ITEM_AIR:
@@ -1293,8 +1385,10 @@ func _furnace_left_click(state: SSDFurnaceState, slot_index: int) -> void:
 		return
 	if slot_index == 0 and not state.can_place_input(_cursor_block_id):
 		return
-	if slot_index == 1 and not state.can_place_fuel(_cursor_block_id):
-		return
+	if slot_index == 1:
+		var can_place_secondary: bool = state.can_place_secondary(_cursor_block_id) if _open_processing_mode != "" and _open_processing_mode != "furnace" else state.can_place_fuel(_cursor_block_id)
+		if not can_place_secondary:
+			return
 	if slot_count > 0 and slot_item_id == _cursor_block_id and slot_count < SSDInventory.MAX_STACK:
 		var transfer: int = min(SSDInventory.MAX_STACK - slot_count, _cursor_count)
 		slot_count += transfer
@@ -1319,7 +1413,7 @@ func _furnace_left_click(state: SSDFurnaceState, slot_index: int) -> void:
 		_cursor_block_id = SSDItemDefs.ITEM_AIR
 	_refresh_ui()
 
-func _furnace_right_click(state: SSDFurnaceState, slot_index: int) -> void:
+func _furnace_right_click(state, slot_index: int) -> void:
 	var slot_item_id: int = state.input_item_id if slot_index == 0 else state.fuel_item_id
 	var slot_count: int = state.input_count if slot_index == 0 else state.fuel_count
 	if _cursor_count <= 0 or _cursor_block_id == SSDItemDefs.ITEM_AIR:
@@ -1335,8 +1429,10 @@ func _furnace_right_click(state: SSDFurnaceState, slot_index: int) -> void:
 	else:
 		if slot_index == 0 and not state.can_place_input(_cursor_block_id):
 			return
-		if slot_index == 1 and not state.can_place_fuel(_cursor_block_id):
-			return
+		if slot_index == 1:
+			var can_place_secondary: bool = state.can_place_secondary(_cursor_block_id) if _open_processing_mode != "" and _open_processing_mode != "furnace" else state.can_place_fuel(_cursor_block_id)
+			if not can_place_secondary:
+				return
 		if slot_count <= 0:
 			slot_item_id = _cursor_block_id
 			slot_count = 1
@@ -1358,7 +1454,7 @@ func _furnace_right_click(state: SSDFurnaceState, slot_index: int) -> void:
 	_refresh_ui()
 
 func _take_furnace_output(single: bool) -> void:
-	var state: SSDFurnaceState = _get_open_furnace_state()
+	var state = _get_open_processing_state()
 	if state == null or state.output_count <= 0 or state.output_item_id == SSDItemDefs.ITEM_AIR:
 		return
 	var take_count: int = 1 if single else state.output_count
@@ -1374,26 +1470,44 @@ func _take_furnace_output(single: bool) -> void:
 		state.output_item_id = SSDItemDefs.ITEM_AIR
 	_refresh_ui()
 
+
 func _refresh_furnace_ui() -> void:
 	if _furnace_panel == null:
 		return
-	var state: SSDFurnaceState = _get_open_furnace_state()
-	if state == null:
+	var state_variant = _get_open_processing_state()
+	if state_variant == null:
 		_furnace_panel.visible = false
 		return
-	var ids: Array[int] = [state.input_item_id, state.fuel_item_id, state.output_item_id]
-	var counts: Array[int] = [state.input_count, state.fuel_count, state.output_count]
+	var ids: Array[int] = [state_variant.input_item_id, state_variant.fuel_item_id, state_variant.output_item_id]
+	var counts: Array[int] = [state_variant.input_count, state_variant.fuel_count, state_variant.output_count]
 	for i: int in range(3):
 		if i >= _furnace_slot_icons.size():
 			continue
 		_furnace_slot_icons[i].set_block_id(ids[i])
 		_furnace_slot_icons[i].modulate = Color(1, 1, 1, 1) if ids[i] != SSDItemDefs.ITEM_AIR else Color(1, 1, 1, 0)
 		_furnace_slot_counts[i].text = str(counts[i]) if counts[i] > 1 else ""
-	var burn_ratio: float = 0.0 if state.burn_total <= 0.0 else clampf(state.burn_time / state.burn_total, 0.0, 1.0)
-	_furnace_burn_fill.position.y = 166.0 - (42.0 * burn_ratio)
-	_furnace_burn_fill.size.y = 42.0 * burn_ratio
-	var cook_ratio: float = 0.0 if state.cook_total <= 0.0 else clampf(state.cook_time / state.cook_total, 0.0, 1.0)
-	_furnace_cook_fill.size.x = 70.0 * cook_ratio
+	var burn_ratio: float = 0.0 if state_variant.burn_total <= 0.0 else clampf(state_variant.burn_time / state_variant.burn_total, 0.0, 1.0)
+	if _open_processing_mode == "" or _open_processing_mode == "furnace":
+		_furnace_burn_fill.visible = true
+		_furnace_burn_fill.position.y = 166.0 - (42.0 * burn_ratio)
+		_furnace_burn_fill.size.y = 42.0 * burn_ratio
+		if _processing_status_label != null:
+			_processing_status_label.text = ""
+	elif _furnace_burn_fill != null:
+		_furnace_burn_fill.visible = SSD_COOKING_SCRIPT.station_shows_heat_meter(_open_processing_mode)
+		_furnace_burn_fill.position.y = 166.0 - (42.0 * burn_ratio)
+		_furnace_burn_fill.size.y = 42.0 * burn_ratio
+		var cooking_state: SSDCookingState = state_variant as SSDCookingState
+		if cooking_state != null:
+			if _processing_toggle_button != null and SSD_COOKING_SCRIPT.station_has_toggle(_open_processing_mode):
+				_processing_toggle_button.visible = true
+				_processing_toggle_button.text = SSD_COOKING_SCRIPT.get_station_toggle_label(_open_processing_mode, cooking_state.appliance_on)
+			if _processing_status_label != null:
+				_processing_status_label.text = cooking_state.get_status_text()
+	var cook_ratio: float = 0.0 if state_variant.cook_total <= 0.0 else clampf(state_variant.cook_time / state_variant.cook_total, 0.0, 1.0)
+	if _furnace_cook_fill != null:
+		_furnace_cook_fill.color = Color(0.35, 0.85, 0.48, 1.0) if _open_processing_mode != "" and _open_processing_mode != "furnace" else Color(0.96, 0.86, 0.24, 1.0)
+		_furnace_cook_fill.size.x = 70.0 * cook_ratio
 
 func _make_root_style() -> StyleBoxTexture:
 	var style: StyleBoxTexture = StyleBoxTexture.new()

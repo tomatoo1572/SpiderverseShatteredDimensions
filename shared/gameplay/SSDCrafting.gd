@@ -43,6 +43,60 @@ static func compute_result(grid_ids: PackedInt32Array, grid_width: int, grid_hei
     ]), 3, 2):
         return {"item_id": SSDItemDefs.ITEM_GLASS_BOTTLE, "count": 3}
 
+
+
+
+
+    if _matches_exact(cells, width, height, PackedInt32Array([
+        SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_COBBLESTONE,
+        SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_COAL, SSDItemDefs.ITEM_COBBLESTONE,
+        SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_COBBLESTONE,
+    ]), 3, 3):
+        return {"item_id": SSDVoxelDefs.BlockId.STOVE, "count": 1}
+
+    if _matches_exact(cells, width, height, PackedInt32Array([
+        SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_COBBLESTONE,
+        SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_FURNACE, SSDItemDefs.ITEM_COBBLESTONE,
+        SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_COBBLESTONE, SSDItemDefs.ITEM_COBBLESTONE,
+    ]), 3, 3):
+        return {"item_id": SSDVoxelDefs.BlockId.OVEN, "count": 1}
+
+    if _matches_exact(cells, width, height, PackedInt32Array([
+        SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_OAK_PLANKS,
+        SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_STICK,
+    ]), 2, 2):
+        return {"item_id": SSDVoxelDefs.BlockId.PREP_TABLE, "count": 1}
+
+    if _matches_exact(cells, width, height, PackedInt32Array([
+        SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_OAK_PLANKS,
+        SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_GLASS_BOTTLE, SSDItemDefs.ITEM_OAK_PLANKS,
+        SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_OAK_PLANKS,
+    ]), 3, 3):
+        return {"item_id": SSDVoxelDefs.BlockId.FERMENTER, "count": 1}
+
+    if _matches_exact(cells, width, height, PackedInt32Array([
+        SSDItemDefs.ITEM_GLASS, SSDItemDefs.ITEM_IRON_INGOT, SSDItemDefs.ITEM_GLASS,
+        SSDItemDefs.ITEM_AIR, SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_AIR,
+    ]), 3, 2):
+        return {"item_id": SSDVoxelDefs.BlockId.BLENDER, "count": 1}
+    if _matches_exact(cells, width, height, PackedInt32Array([
+        SSDItemDefs.ITEM_IRON_INGOT, SSDItemDefs.ITEM_IRON_INGOT, SSDItemDefs.ITEM_IRON_INGOT,
+    ]), 3, 1):
+        return {"item_id": SSDItemDefs.ITEM_PAN, "count": 1}
+
+    if _matches_exact(cells, width, height, PackedInt32Array([
+        SSDItemDefs.ITEM_IRON_INGOT, SSDItemDefs.ITEM_AIR, SSDItemDefs.ITEM_IRON_INGOT,
+        SSDItemDefs.ITEM_IRON_INGOT, SSDItemDefs.ITEM_IRON_INGOT, SSDItemDefs.ITEM_IRON_INGOT,
+    ]), 3, 2):
+        return {"item_id": SSDItemDefs.ITEM_POT, "count": 1}
+
+    if _matches_exact(cells, width, height, PackedInt32Array([
+        SSDItemDefs.ITEM_GLASS, SSDItemDefs.ITEM_GLASS, SSDItemDefs.ITEM_GLASS,
+        SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_STICK, SSDItemDefs.ITEM_OAK_PLANKS,
+        SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_OAK_PLANKS, SSDItemDefs.ITEM_OAK_PLANKS,
+    ]), 3, 3):
+        return {"item_id": SSDVoxelDefs.BlockId.DISPLAY_CASE, "count": 1}
+
     return {"item_id": SSDItemDefs.ITEM_AIR, "count": 0}
 
 static func consume_ingredients(grid_ids: PackedInt32Array, grid_counts: PackedInt32Array, grid_width: int, grid_height: int) -> void:
@@ -54,8 +108,9 @@ static func consume_ingredients(grid_ids: PackedInt32Array, grid_counts: PackedI
             continue
         grid_counts[i] -= 1
         if grid_counts[i] <= 0:
-            grid_ids[i] = SSDItemDefs.ITEM_AIR
-            grid_counts[i] = 0
+            var return_item_id: int = SSDItemDefs.get_consumed_return_item_id(grid_ids[i])
+            grid_ids[i] = return_item_id
+            grid_counts[i] = 1 if return_item_id != SSDItemDefs.ITEM_AIR else 0
 
 static func _match_pickaxe_recipe(cells: PackedInt32Array, width: int, height: int) -> Dictionary:
     var materials: Array = [

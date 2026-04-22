@@ -13,6 +13,7 @@ const FLUID_VERTICAL_RANGE: int = 8
 @export var collisions_per_frame: int = 4
 @export var update_interval: float = 0.12
 @export var worker_thread_count: int = 2
+@export var crop_growth_speed_multiplier: float = 1.0
 
 @export var base_height: int = 30
 @export var height_variation: int = 20
@@ -35,6 +36,7 @@ var _target: Node3D
 var _refresh_timer: float = 0.0
 var _chunk_material_opaque: StandardMaterial3D
 var _chunk_material_transparent: StandardMaterial3D
+var _last_target_chunk: Vector2i = Vector2i(2147483647, 2147483647)
 var _world_revision: int = 0
 var _pending_fluid_updates: Array[Vector3i] = []
 var _pending_fluid_lookup: Dictionary = {}
@@ -42,6 +44,7 @@ var _pending_gravity_updates: Array[Vector3i] = []
 var _pending_gravity_lookup: Dictionary = {}
 var _pending_chunk_rebuilds: Array[Vector2i] = []
 var _pending_chunk_rebuild_lookup: Dictionary = {}
+var _crop_growth_timer: float = 0.0
 
 var _worker_mutex: Mutex = Mutex.new()
 var _worker_semaphore: Semaphore = Semaphore.new()
@@ -71,10 +74,26 @@ func _process(delta: float) -> void:
 
 	_consume_load_queue()
 	_consume_completed_results()
-	_consume_chunk_rebuild_queue(max(12, load_radius * 2))
+	_consume_chunk_rebuild_queue(max(1, min(4, int(load_radius / 3))))
 	_consume_collision_queue()
-	_consume_fluid_updates(10)
-	_consume_gravity_updates(12)
+	_consume_fluid_updates(4)
+	_consume_gravity_updates(6)
+	_crop_growth_timer += delta * maxf(0.0, crop_growth_speed_multiplier)
+	if _crop_growth_timer >= 0.45:
+		_crop_growth_timer = 0.0
+		var attempt_bonus: int = max(1, int(round(maxf(1.0, crop_growth_speed_multiplier))))
+		_consume_crop_growth_attempts(max(4, min(12, load_radius)) * attempt_bonus)
+
+
+func set_crop_growth_speed_multiplier(multiplier: float) -> void:
+	crop_growth_speed_multiplier = clampf(multiplier, 0.0, 64.0)
+
+func get_crop_growth_speed_multiplier() -> float:
+	return crop_growth_speed_multiplier
+
+func accelerate_crop_growth_ticks(ticks: int) -> void:
+	for _i: int in range(max(0, ticks)):
+		_consume_crop_growth_attempts(max(4, min(12, load_radius)))
 
 func set_target(target: Node3D) -> void:
 	_target = target
@@ -83,17 +102,13 @@ func set_target(target: Node3D) -> void:
 func apply_render_distance(new_distance: int) -> void:
 	load_radius = clampi(new_distance, 2, 40)
 	collision_radius = max(1, load_radius - 1)
-	chunks_per_frame = clampi(36 + int(load_radius * 12.0), 64, 384)
-	completed_chunks_per_frame = clampi(chunks_per_frame * 5, 128, 768)
-	collisions_per_frame = clampi(16 + int(load_radius * 4.0), 16, 128)
-	update_interval = 0.005 if load_radius >= 12 else 0.02
+	chunks_per_frame = clampi(8 + int(load_radius * 1.5), 12, 72)
+	completed_chunks_per_frame = clampi(chunks_per_frame * 3, 24, 192)
+	collisions_per_frame = clampi(4 + int(load_radius * 0.75), 6, 48)
+	update_interval = 0.02 if load_radius >= 12 else 0.05
 	_refresh_timer = 0.0
 	if _target != null:
 		_refresh_streaming()
-		_consume_load_queue(max(24, chunks_per_frame * 4))
-		_consume_completed_results(max(16, completed_chunks_per_frame))
-		_consume_chunk_rebuild_queue(max(16, load_radius * 3))
-		_consume_collision_queue(max(8, collisions_per_frame))
 
 func prime_spawn_area(world_position: Vector3, radius: int = 1) -> Vector3:
 	var center_chunk: Vector2i = _world_position_to_chunk(world_position)
@@ -215,7 +230,7 @@ func request_set_block_global(block_x: int, block_y: int, block_z: int, block_id
 		var dirty_coord: Vector2i = dirty_coord_variant
 		_queue_chunk_rebuild(dirty_coord)
 
-	if queue_fluid_update:
+	if queue_fluid_update and _should_queue_fluid_update(old_block, block_id, block_x, block_y, block_z):
 		_queue_fluid_rebuild_around(Vector3i(block_x, block_y, block_z))
 	_queue_gravity_rebuild_around(Vector3i(block_x, block_y, block_z))
 
@@ -266,7 +281,12 @@ func request_set_blocks_batch(changes: Array[Dictionary], include_air: bool = fa
 
 	if queue_fluid_update:
 		for change_variant: Dictionary in changes:
-			_queue_fluid_rebuild_around(Vector3i(int(change_variant.get("x", 0)), int(change_variant.get("y", 0)), int(change_variant.get("z", 0))))
+			var cx: int = int(change_variant.get("x", 0))
+			var cy: int = int(change_variant.get("y", 0))
+			var cz: int = int(change_variant.get("z", 0))
+			var new_block_id: int = int(change_variant.get("id", SSDVoxelDefs.BlockId.AIR))
+			if _should_queue_fluid_update(get_block_global(cx, cy, cz), new_block_id, cx, cy, cz):
+				_queue_fluid_rebuild_around(Vector3i(cx, cy, cz))
 	for change_variant: Dictionary in changes:
 		_queue_gravity_rebuild_around(Vector3i(int(change_variant.get("x", 0)), int(change_variant.get("y", 0)), int(change_variant.get("z", 0))))
 
@@ -297,41 +317,41 @@ func _queue_gravity_rebuild_around(center: Vector3i) -> void:
 			for dx: int in range(-1, 2):
 				_queue_gravity_update(center + Vector3i(dx, dy, dz))
 
-func _queue_gravity_update(position: Vector3i) -> void:
-	if position.y <= 0 or position.y >= SSDChunkConfig.SIZE_Y:
+func _queue_gravity_update(block_pos: Vector3i) -> void:
+	if block_pos.y <= 0 or block_pos.y >= SSDChunkConfig.SIZE_Y:
 		return
-	var key: String = _fluid_key(position)
+	var key: String = _fluid_key(block_pos)
 	if _pending_gravity_lookup.has(key):
 		return
 	_pending_gravity_lookup[key] = true
-	_pending_gravity_updates.append(position)
+	_pending_gravity_updates.append(block_pos)
 
 func _consume_gravity_updates(max_count: int) -> void:
 	var budget: int = max_count
 	while budget > 0 and not _pending_gravity_updates.is_empty():
-		var position: Vector3i = _pending_gravity_updates[0]
+		var gravity_pos: Vector3i = _pending_gravity_updates[0]
 		_pending_gravity_updates.remove_at(0)
-		_pending_gravity_lookup.erase(_fluid_key(position))
-		_simulate_gravity_at(position)
+		_pending_gravity_lookup.erase(_fluid_key(gravity_pos))
+		_simulate_gravity_at(gravity_pos)
 		budget -= 1
 
-func _simulate_gravity_at(position: Vector3i) -> void:
-	if position.y <= 0 or position.y >= SSDChunkConfig.SIZE_Y:
+func _simulate_gravity_at(block_pos: Vector3i) -> void:
+	if block_pos.y <= 0 or block_pos.y >= SSDChunkConfig.SIZE_Y:
 		return
-	var block_id: int = get_block_global(position.x, position.y, position.z)
+	var block_id: int = get_block_global(block_pos.x, block_pos.y, block_pos.z)
 	if not SSDVoxelDefs.is_gravity_block(block_id):
 		return
-	var below: Vector3i = position + Vector3i.DOWN
+	var below: Vector3i = block_pos + Vector3i.DOWN
 	var below_id: int = get_block_global(below.x, below.y, below.z)
 	if below_id != SSDVoxelDefs.BlockId.AIR and not SSDVoxelDefs.is_fluid(below_id):
 		return
 	request_set_blocks_batch([
-		{"x": position.x, "y": position.y, "z": position.z, "id": SSDVoxelDefs.BlockId.AIR},
+		{"x": block_pos.x, "y": block_pos.y, "z": block_pos.z, "id": SSDVoxelDefs.BlockId.AIR},
 		{"x": below.x, "y": below.y, "z": below.z, "id": block_id},
 	], true, true)
-	_queue_gravity_update(position)
+	_queue_gravity_update(block_pos)
 	_queue_gravity_update(below)
-	_queue_gravity_update(position + Vector3i.UP)
+	_queue_gravity_update(block_pos + Vector3i.UP)
 
 func _queue_fluid_rebuild_around(center: Vector3i) -> void:
 	for dy: int in range(-1, 2):
@@ -339,20 +359,20 @@ func _queue_fluid_rebuild_around(center: Vector3i) -> void:
 			for dx: int in range(-1, 2):
 				_queue_fluid_update(center + Vector3i(dx, dy, dz))
 
-func _queue_fluid_update(position: Vector3i) -> void:
-	var key: String = _fluid_key(position)
+func _queue_fluid_update(block_pos: Vector3i) -> void:
+	var key: String = _fluid_key(block_pos)
 	if _pending_fluid_lookup.has(key):
 		return
 	_pending_fluid_lookup[key] = true
-	_pending_fluid_updates.append(position)
+	_pending_fluid_updates.append(block_pos)
 
 func _consume_fluid_updates(max_count: int) -> void:
 	var budget: int = max_count
 	while budget > 0 and not _pending_fluid_updates.is_empty():
-		var position: Vector3i = _pending_fluid_updates[0]
+		var fluid_pos: Vector3i = _pending_fluid_updates[0]
 		_pending_fluid_updates.remove_at(0)
-		_pending_fluid_lookup.erase(_fluid_key(position))
-		_recompute_fluid_region(position)
+		_pending_fluid_lookup.erase(_fluid_key(fluid_pos))
+		_recompute_fluid_region(fluid_pos)
 		budget -= 1
 
 func _recompute_fluid_region(center: Vector3i) -> void:
@@ -439,6 +459,18 @@ func _can_fluid_fill_at(pos: Vector3i) -> bool:
 	var block_id: int = get_block_global(pos.x, pos.y, pos.z)
 	return block_id == SSDVoxelDefs.BlockId.AIR or SSDVoxelDefs.is_fluid(block_id)
 
+func _should_queue_fluid_update(old_block: int, new_block: int, block_x: int, block_y: int, block_z: int) -> bool:
+	if SSDVoxelDefs.is_fluid(old_block) or SSDVoxelDefs.is_fluid(new_block):
+		return true
+	for dz: int in range(-1, 2):
+		for dy: int in range(-1, 2):
+			for dx: int in range(-1, 2):
+				if dx == 0 and dy == 0 and dz == 0:
+					continue
+				if SSDVoxelDefs.is_fluid(get_block_global(block_x + dx, block_y + dy, block_z + dz)):
+					return true
+	return false
+
 func _fluid_key(pos: Vector3i) -> String:
 	return "%d,%d,%d" % [pos.x, pos.y, pos.z]
 
@@ -453,17 +485,20 @@ func _refresh_streaming() -> void:
 		return
 
 	var center_chunk: Vector2i = _world_position_to_chunk(_target.global_position)
+	var moved_to_new_chunk: bool = center_chunk != _last_target_chunk
+	_last_target_chunk = center_chunk
 	var wanted_lookup: Dictionary = {}
 	var wanted_collision_lookup: Dictionary = {}
 	var ordered_coords: Array[Vector2i] = _get_coords_in_radius(center_chunk, load_radius)
 	var ordered_collision_coords: Array[Vector2i] = _get_coords_in_radius(center_chunk, collision_radius)
 
-	var sync_ring: int = clampi(int(ceil(float(load_radius) * 0.25)), 2, 6)
-	for near_coord: Vector2i in ordered_coords:
-		if maxi(abs(near_coord.x - center_chunk.x), abs(near_coord.y - center_chunk.y)) > sync_ring:
-			continue
-		if not _chunks.has(near_coord):
-			_ensure_chunk_loaded_sync(near_coord, true)
+	var sync_ring: int = 1 if moved_to_new_chunk else 0
+	if sync_ring > 0:
+		for near_coord: Vector2i in ordered_coords:
+			if maxi(abs(near_coord.x - center_chunk.x), abs(near_coord.y - center_chunk.y)) > sync_ring:
+				continue
+			if not _chunks.has(near_coord):
+				_ensure_chunk_loaded_sync(near_coord, true)
 
 	for coord: Vector2i in ordered_coords:
 		wanted_lookup[coord] = true
@@ -656,7 +691,10 @@ func _rebuild_loaded_chunk(chunk_coords: Vector2i) -> void:
 	var had_collision: bool = chunk.has_collision_enabled()
 	var surface_arrays: Dictionary = SSDChunkMesher.build_surface_arrays_runtime(self, chunk_coords, chunk_data)
 	chunk.apply_surface_arrays(surface_arrays)
-	chunk.set_collision_enabled(had_collision)
+	chunk.set_collision_enabled(false)
+	if had_collision and not _pending_collision_lookup.has(chunk_coords):
+		_pending_collision_builds.append(chunk_coords)
+		_pending_collision_lookup[chunk_coords] = true
 
 func _enqueue_worker_job(coord: Vector2i, revision: int) -> void:
 	_worker_mutex.lock()
@@ -773,7 +811,7 @@ func _build_materials() -> void:
 	_chunk_material_opaque.alpha_scissor_threshold = 0.5
 	_chunk_material_opaque.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
 	_chunk_material_opaque.albedo_texture = atlas
-	_chunk_material_opaque.albedo_color = Color(0.68, 0.68, 0.68, 1.0)
+	_chunk_material_opaque.albedo_color = Color(0.56, 0.56, 0.56, 1.0)
 
 	_chunk_material_transparent = StandardMaterial3D.new()
 	_chunk_material_transparent.vertex_color_use_as_albedo = true
@@ -784,7 +822,7 @@ func _build_materials() -> void:
 	_chunk_material_transparent.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_chunk_material_transparent.specular_mode = BaseMaterial3D.SPECULAR_DISABLED
 	_chunk_material_transparent.albedo_texture = atlas
-	_chunk_material_transparent.albedo_color = Color(0.68, 0.68, 0.68, 0.90)
+	_chunk_material_transparent.albedo_color = Color(0.56, 0.56, 0.56, 0.82)
 
 func _world_position_to_chunk(world_position: Vector3) -> Vector2i:
 	var block_x: int = floori(world_position.x / SSDChunkConfig.VOXEL_SIZE)
@@ -824,3 +862,71 @@ func _get_coords_in_radius(center_chunk: Vector2i, radius: int) -> Array[Vector2
 
 func _is_within_radius(coord: Vector2i, center_coord: Vector2i, radius: int) -> bool:
 	return abs(coord.x - center_coord.x) <= radius and abs(coord.y - center_coord.y) <= radius
+
+
+func _consume_crop_growth_attempts(attempt_count: int) -> void:
+	if _chunks.is_empty():
+		return
+	var chunk_coords_list: Array = _chunks.keys()
+	for _attempt_index: int in range(attempt_count):
+		var chunk_coords: Vector2i = chunk_coords_list[randi() % chunk_coords_list.size()]
+		_attempt_crop_growth_in_chunk(chunk_coords)
+
+func _attempt_crop_growth_in_chunk(chunk_coords: Vector2i) -> void:
+	var chunk_data: SSDChunkData = _ensure_chunk_data_cached(chunk_coords)
+	if chunk_data == null:
+		return
+	var local_x: int = randi() % SSDChunkConfig.SIZE_X
+	var local_z: int = randi() % SSDChunkConfig.SIZE_Z
+	for local_y: int in range(SSDChunkConfig.SIZE_Y - 1, -1, -1):
+		var block_id: int = chunk_data.get_block(local_x, local_y, local_z)
+		if block_id == SSDVoxelDefs.BlockId.AIR:
+			continue
+		var world_x: int = chunk_coords.x * SSDChunkConfig.SIZE_X + local_x
+		var world_z: int = chunk_coords.y * SSDChunkConfig.SIZE_Z + local_z
+		var block_pos: Vector3i = Vector3i(world_x, local_y, world_z)
+		if block_id == SSDVoxelDefs.BlockId.MANGO_SAPLING:
+			if randf() <= SSDCrops.get_growth_chance(block_id, _has_nearby_water(block_pos)):
+				_try_grow_mango_tree(block_pos)
+			return
+		if not SSDCrops.can_grow(block_id):
+			return
+		if not _can_crop_grow_at(block_pos, block_id):
+			return
+		if randf() <= SSDCrops.get_growth_chance(block_id, _has_nearby_water(block_pos)):
+			request_set_block_global(block_pos.x, block_pos.y, block_pos.z, SSDCrops.get_next_stage(block_id), false)
+		return
+
+func _can_crop_grow_at(block_pos: Vector3i, block_id: int) -> bool:
+	var below_id: int = get_block_global(block_pos.x, block_pos.y - 1, block_pos.z)
+	if SSDCrops.requires_farmland(block_id):
+		return below_id == SSDVoxelDefs.BlockId.FARMLAND
+	if SSDVoxelDefs.is_bush_block(block_id) or block_id == SSDVoxelDefs.BlockId.MANGO_SAPLING:
+		return below_id == SSDVoxelDefs.BlockId.GRASS or below_id == SSDVoxelDefs.BlockId.DIRT or below_id == SSDVoxelDefs.BlockId.FARMLAND
+	return true
+
+func _has_nearby_water(block_pos: Vector3i) -> bool:
+	for dz: int in range(-2, 3):
+		for dx: int in range(-2, 3):
+			for dy: int in range(-1, 2):
+				var neighbor_id: int = get_block_global(block_pos.x + dx, block_pos.y + dy, block_pos.z + dz)
+				if SSDVoxelDefs.is_fluid(neighbor_id):
+					return true
+	return false
+
+func _try_grow_mango_tree(sapling_pos: Vector3i) -> void:
+	var changes: Array[Dictionary] = []
+	for trunk_y: int in range(0, 3):
+		changes.append({"x": sapling_pos.x, "y": sapling_pos.y + trunk_y, "z": sapling_pos.z, "id": SSDVoxelDefs.BlockId.OAK_LOG})
+	for leaf_y: int in range(2, 5):
+		for leaf_z: int in range(-1, 2):
+			for leaf_x: int in range(-1, 2):
+				var ax: int = sapling_pos.x + leaf_x
+				var ay: int = sapling_pos.y + leaf_y
+				var az: int = sapling_pos.z + leaf_z
+				if leaf_x == 0 and leaf_z == 0 and leaf_y <= 3:
+					continue
+				var current_id: int = get_block_global(ax, ay, az)
+				if current_id == SSDVoxelDefs.BlockId.AIR or current_id == SSDVoxelDefs.BlockId.MANGO_SAPLING or current_id == SSDVoxelDefs.BlockId.OAK_LEAVES:
+					changes.append({"x": ax, "y": ay, "z": az, "id": SSDVoxelDefs.BlockId.MANGO_LEAVES})
+	request_set_blocks_batch(changes, true, false)

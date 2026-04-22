@@ -36,6 +36,7 @@ var _health_bonus: float = 0.0
 var _stamina_bonus: float = 0.0
 var _stamina_training_drains: int = 0
 var _drained_this_cycle: bool = false
+var _survival_enabled: bool = true
 
 func _ready() -> void:
     max_health = base_max_health
@@ -96,7 +97,15 @@ func increase_stamina_bonus(amount: float) -> void:
     _persist_profile()
 
 func tick(delta: float, drain_sprint: bool) -> void:
-    _apply_survival_drain(delta, drain_sprint)
+    if not _survival_enabled:
+        if current_hunger != max_hunger or current_thirst != max_thirst:
+            current_hunger = max_hunger
+            current_thirst = max_thirst
+            emit_signal("hunger_changed", current_hunger, max_hunger)
+            emit_signal("thirst_changed", current_thirst, max_thirst)
+        drain_sprint = false
+    else:
+        _apply_survival_drain(delta, drain_sprint)
     if drain_sprint and can_sprint():
         var previous_stamina: float = current_stamina
         current_stamina = maxf(0.0, current_stamina - (sprint_drain_per_second * delta))
@@ -132,6 +141,8 @@ func _apply_survival_drain(delta: float, drain_sprint: bool) -> void:
 func spend_stamina(amount: float) -> bool:
     if amount <= 0.0:
         return true
+    if not _survival_enabled:
+        return true
     if current_stamina + 0.001 < amount:
         return false
     var previous_stamina: float = current_stamina
@@ -143,6 +154,8 @@ func spend_stamina(amount: float) -> bool:
     return true
 
 func _apply_exertion_needs(stamina_amount: float) -> void:
+    if not _survival_enabled:
+        return
     var hunger_cost: float = (stamina_amount / 4.0) * jump_hunger_cost
     var thirst_cost: float = (stamina_amount / 4.0) * jump_thirst_cost
     current_hunger = maxf(0.0, current_hunger - hunger_cost)
@@ -172,10 +185,23 @@ func _persist_profile() -> void:
     SSDCore.set_current_world_profile(build_profile_patch())
 
 func can_sprint() -> bool:
+    if not _survival_enabled:
+        return true
     return current_stamina >= min_sprint_start_stamina and current_hunger > 0.0 and current_thirst > 0.0
 
 func can_jump(required_cost: float = 0.0) -> bool:
     return current_stamina >= maxf(min_jump_stamina, required_cost)
+
+func set_survival_enabled(enabled: bool) -> void:
+    _survival_enabled = enabled
+    if not _survival_enabled:
+        current_hunger = max_hunger
+        current_thirst = max_thirst
+        emit_signal("hunger_changed", current_hunger, max_hunger)
+        emit_signal("thirst_changed", current_thirst, max_thirst)
+
+func is_survival_enabled() -> bool:
+    return _survival_enabled
 
 func restore_hunger(amount: float) -> void:
     if amount <= 0.0:

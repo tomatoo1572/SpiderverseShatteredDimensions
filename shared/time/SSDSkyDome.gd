@@ -23,17 +23,17 @@ func _ready() -> void:
 shader_type spatial;
 render_mode unshaded, cull_front, fog_disabled, depth_draw_never;
 
-uniform vec4 day_top : source_color = vec4(0.14, 0.22, 0.34, 1.0);
-uniform vec4 day_horizon : source_color = vec4(0.40, 0.50, 0.64, 1.0);
-uniform vec4 night_top : source_color = vec4(0.010, 0.016, 0.034, 1.0);
-uniform vec4 night_horizon : source_color = vec4(0.03, 0.05, 0.09, 1.0);
-uniform vec4 dawn_tint : source_color = vec4(0.80, 0.48, 0.28, 1.0);
+uniform vec4 day_top : source_color = vec4(0.67, 0.69, 0.77, 1.0);
+uniform vec4 day_horizon : source_color = vec4(0.78, 0.77, 0.84, 1.0);
+uniform vec4 night_top : source_color = vec4(0.11, 0.12, 0.19, 1.0);
+uniform vec4 night_horizon : source_color = vec4(0.20, 0.19, 0.27, 1.0);
+uniform vec4 dawn_tint : source_color = vec4(0.74, 0.66, 0.74, 1.0);
 uniform vec3 sun_dir = vec3(0.0, 1.0, 0.0);
 uniform float daylight = 1.0;
 uniform float horizon_tint = 0.0;
 uniform float time_hours = 12.0;
 uniform float brightness = 1.0;
-uniform float cloud_opacity = 0.20;
+uniform float cloud_opacity = 0.08;
 uniform float sun_size = 0.030;
 uniform float moon_size = 0.028;
 uniform sampler2D sun_tex;
@@ -109,19 +109,19 @@ void fragment() {
     cloud_uv += vec2(time_hours * 0.010, 0.0);
     float cloud_noise = fbm(cloud_uv * 0.78) * 0.70 + fbm(cloud_uv * 1.65 + vec2(13.2, 7.4)) * 0.30;
     float cloud_mask = smoothstep(0.58, 0.76, cloud_noise) * smoothstep(-0.02, 0.20, dir.y);
-    vec3 cloud_day = vec3(0.66, 0.70, 0.76);
-    vec3 cloud_night = vec3(0.08, 0.09, 0.12);
+    vec3 cloud_day = vec3(0.84, 0.84, 0.88);
+    vec3 cloud_night = vec3(0.18, 0.18, 0.24);
     vec3 cloud_col = mix(cloud_night, cloud_day, daylight);
     sky_col = mix(sky_col, cloud_col, cloud_mask * cloud_opacity * mix(0.20, 1.0, daylight));
 
     vec3 n_sun_dir = normalize(sun_dir);
     float sun_dot = dot(dir, n_sun_dir);
     float sun_glow = smoothstep(0.989, 0.9995, sun_dot) * (0.03 + daylight * 0.14);
-    sky_col += vec3(0.90, 0.76, 0.52) * sun_glow;
+    sky_col += vec3(0.92, 0.88, 0.82) * sun_glow * 0.35;
 
     float moon_dot = dot(dir, -n_sun_dir);
     float moon_glow = smoothstep(0.993, 0.99965, moon_dot) * (1.0 - daylight);
-    sky_col += vec3(0.56, 0.62, 0.72) * moon_glow * 0.10;
+    sky_col += vec3(0.74, 0.76, 0.82) * moon_glow * 0.04;
 
     vec4 sun_sample = sample_celestial(sun_tex, dir, n_sun_dir, sun_size);
     vec4 moon_sample = sample_celestial(moon_tex, dir, -n_sun_dir, moon_size);
@@ -131,7 +131,7 @@ void fragment() {
     vec2 star_uv = dir.xz / max(0.08, dir.y + 0.52) * 60.0;
     float star_pick = hash21(floor(star_uv));
     float star_twinkle = 0.78 + 0.22 * sin(time_hours * 1.7 + star_pick * 80.0);
-    float stars = step(0.9982, star_pick) * pow(max(dir.y, 0.0), 1.4) * (1.0 - daylight) * star_twinkle;
+    float stars = step(0.9988, star_pick) * pow(max(dir.y, 0.0), 1.4) * (1.0 - daylight) * star_twinkle * 0.6;
     sky_col += vec3(stars);
 
     ALBEDO = clamp(sky_col * brightness, vec3(0.0), vec3(1.0));
@@ -153,4 +153,4 @@ func set_sky_values(daylight: float, horizon_tint: float, sun_direction: Vector3
     _material.set_shader_parameter("horizon_tint", clampf(horizon_tint, 0.0, 1.0))
     _material.set_shader_parameter("sun_dir", sun_direction.normalized())
     _material.set_shader_parameter("time_hours", time_hours)
-    _material.set_shader_parameter("brightness", clampf(brightness, 0.22, 0.68))
+    _material.set_shader_parameter("brightness", clampf(brightness, 0.55, 1.0))

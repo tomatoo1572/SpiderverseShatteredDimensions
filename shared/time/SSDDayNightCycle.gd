@@ -63,7 +63,7 @@ func get_brightness_percent() -> float:
     return _brightness_percent
 
 func _get_brightness_scale() -> float:
-    return lerpf(0.22, 0.42, _brightness_percent / 100.0)
+    return lerpf(0.82, 1.18, _brightness_percent / 100.0)
 
 func _ensure_sky_nodes() -> void:
     var parent_node: Node = get_parent()
@@ -83,28 +83,32 @@ func _apply_lighting() -> void:
     var environment: Environment = _world_environment.environment
     var current_hour: float = get_time_hours()
     var daylight: float = _get_daylight_factor(current_hour)
-    var horizon_tint: float = _get_horizon_tint_factor(current_hour)
     var brightness_scale: float = _get_brightness_scale()
 
-    var fog_day: Color = Color(0.18, 0.24, 0.34, 1.0)
-    var fog_night: Color = Color(0.012, 0.016, 0.024, 1.0)
-    var fog_color: Color = fog_night.lerp(fog_day, daylight)
-    fog_color = fog_color.lerp(Color(0.54, 0.36, 0.25, 1.0), horizon_tint * 0.04)
+    var sky_day: Color = Color(0.72, 0.74, 0.82, 1.0)
+    var sky_night: Color = Color(0.14, 0.15, 0.24, 1.0)
+    var ground_fill_day: Color = Color(0.78, 0.78, 0.80, 1.0)
+    var ground_fill_night: Color = Color(0.20, 0.20, 0.26, 1.0)
+    var fog_color: Color = sky_night.lerp(sky_day, daylight)
+    var ambient_color: Color = ground_fill_night.lerp(ground_fill_day, daylight)
 
     environment.background_mode = Environment.BG_CLEAR_COLOR
-    environment.background_color = fog_color * (brightness_scale * 0.88)
-    environment.ambient_light_color = Color(0.05, 0.06, 0.08, 1.0).lerp(Color(0.16, 0.18, 0.20, 1.0), daylight)
-    environment.ambient_light_energy = lerpf(0.006, 0.022, daylight) * brightness_scale
+    environment.background_color = fog_color
+    environment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
+    environment.ambient_light_color = ambient_color
+    environment.ambient_light_energy = lerpf(0.38, 0.95, daylight) * brightness_scale
+    environment.reflected_light_source = Environment.REFLECTION_SOURCE_DISABLED
     environment.fog_enabled = true
-    environment.fog_density = lerpf(0.0028, 0.0010, daylight)
-    environment.fog_aerial_perspective = lerpf(0.022, 0.040, daylight)
+    environment.fog_density = lerpf(0.0018, 0.0007, daylight)
+    environment.fog_aerial_perspective = lerpf(0.03, 0.06, daylight)
     environment.fog_light_color = fog_color
-    environment.fog_light_energy = lerpf(0.001, 0.008, daylight) * brightness_scale
+    environment.fog_light_energy = lerpf(0.08, 0.18, daylight) * brightness_scale
 
-    var sun_energy: float = lerpf(0.004, 0.18, daylight)
-    sun_energy = lerpf(sun_energy, 0.16, horizon_tint * 0.18)
-    _sun.light_energy = sun_energy * brightness_scale
-    _sun.light_color = Color(0.84, 0.85, 0.87, 1.0).lerp(Color(0.76, 0.64, 0.52, 1.0), horizon_tint * 0.22)
+    _sun.shadow_enabled = false
+    _sun.light_energy = 0.0
+    _sun.light_indirect_energy = 0.0
+    _sun.light_volumetric_fog_energy = 0.0
+    _sun.light_color = Color(1.0, 1.0, 1.0, 1.0)
 
     var sun_progress: float = fposmod((current_hour - 6.0) / 24.0, 1.0)
     var sun_pitch: float = -90.0 + (sun_progress * 360.0)
@@ -117,7 +121,7 @@ func _apply_lighting() -> void:
     var sun_direction: Vector3 = _sun.global_basis.z.normalized()
     if _sky_dome != null and _sky_dome.is_inside_tree():
         _sky_dome.global_position = Vector3(anchor_position.x, 0.0, anchor_position.z)
-        _sky_dome.set_sky_values(daylight, horizon_tint, sun_direction, current_hour, brightness_scale)
+        _sky_dome.set_sky_values(daylight, 0.0, sun_direction, current_hour, clampf(brightness_scale * 0.78, 0.55, 1.0))
 
 func _get_daylight_factor(hour: float) -> float:
     if hour < sunrise_start_hour:

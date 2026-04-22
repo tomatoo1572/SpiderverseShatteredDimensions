@@ -24,11 +24,47 @@ enum BlockId {
 	WATER_FLOW_3 = 19,
 	WATER_FLOW_2 = 20,
 	WATER_FLOW_1 = 21,
+	PREP_TABLE = 22,
+	STOVE = 23,
+	OVEN = 24,
+	FERMENTER = 25,
+	BLENDER = 26,
+	FARMLAND = 27,
+	WHEAT_CROP_0 = 28,
+	WHEAT_CROP_1 = 29,
+	WHEAT_CROP_2 = 30,
+	CARROT_CROP_0 = 31,
+	CARROT_CROP_1 = 32,
+	CARROT_CROP_2 = 33,
+	POTATO_CROP_0 = 34,
+	POTATO_CROP_1 = 35,
+	POTATO_CROP_2 = 36,
+	RICE_CROP_0 = 37,
+	RICE_CROP_1 = 38,
+	RICE_CROP_2 = 39,
+	TOMATO_CROP_0 = 40,
+	TOMATO_CROP_1 = 41,
+	TOMATO_CROP_2 = 42,
+	CUCUMBER_CROP_0 = 43,
+	CUCUMBER_CROP_1 = 44,
+	CUCUMBER_CROP_2 = 45,
+	STRAWBERRY_BUSH_0 = 46,
+	STRAWBERRY_BUSH_1 = 47,
+	STRAWBERRY_BUSH_2 = 48,
+	BLUEBERRY_BUSH_0 = 49,
+	BLUEBERRY_BUSH_1 = 50,
+	BLUEBERRY_BUSH_2 = 51,
+	BLACKBERRY_BUSH_0 = 52,
+	BLACKBERRY_BUSH_1 = 53,
+	BLACKBERRY_BUSH_2 = 54,
+	MANGO_SAPLING = 55,
+	MANGO_LEAVES = 56,
+	DISPLAY_CASE = 57,
 }
 
 const ATLAS_TILE_SIZE: int = 64
 const ATLAS_COLUMNS: int = 8
-const ATLAS_ROWS: int = 4
+const ATLAS_ROWS: int = 6
 const TOP_CONNECTED_REPEAT_BLOCKS: int = 1
 const NAMESPACE_PREFIX: String = "SSD:"
 
@@ -50,6 +86,36 @@ const TILE_IRON_ORE: int = 14
 const TILE_FURNACE_FRONT: int = 15
 const TILE_SAND: int = 16
 const TILE_GLASS: int = 17
+const TILE_PREP_TABLE_TOP: int = 18
+const TILE_PREP_TABLE_SIDE: int = 19
+const TILE_STOVE: int = 20
+const TILE_OVEN: int = 21
+const TILE_FERMENTER: int = 22
+const TILE_BLENDER: int = 23
+const TILE_FARMLAND: int = 24
+const TILE_WHEAT_0: int = 25
+const TILE_WHEAT_1: int = 26
+const TILE_WHEAT_2: int = 27
+const TILE_CARROT_0: int = 28
+const TILE_CARROT_1: int = 29
+const TILE_CARROT_2: int = 30
+const TILE_POTATO_0: int = 31
+const TILE_POTATO_1: int = 32
+const TILE_POTATO_2: int = 33
+const TILE_RICE_0: int = 34
+const TILE_RICE_1: int = 35
+const TILE_RICE_2: int = 36
+const TILE_TOMATO_0: int = 37
+const TILE_TOMATO_1: int = 38
+const TILE_TOMATO_2: int = 39
+const TILE_CUCUMBER_0: int = 40
+const TILE_CUCUMBER_1: int = 41
+const TILE_CUCUMBER_2: int = 42
+const TILE_STRAWBERRY_BUSH: int = 43
+const TILE_BLUEBERRY_BUSH: int = 44
+const TILE_BLACKBERRY_BUSH: int = 45
+const TILE_MANGO_SAPLING: int = 46
+const TILE_MANGO_LEAVES: int = 47
 
 static func is_air(block_id: int) -> bool:
 	return block_id == BlockId.AIR
@@ -64,7 +130,7 @@ static func is_fluid(block_id: int) -> bool:
 	return is_source_water(block_id) or is_flowing_water(block_id)
 
 static func is_solid(block_id: int) -> bool:
-	return block_id != BlockId.AIR and not is_fluid(block_id)
+	return block_id != BlockId.AIR and not is_fluid(block_id) and not is_plant_block(block_id) and not is_bush_block(block_id) and block_id != BlockId.MANGO_SAPLING
 
 static func is_renderable(block_id: int) -> bool:
 	return block_id != BlockId.AIR
@@ -161,6 +227,28 @@ static func get_color(block_id: int) -> Color:
 			return Color(0.88, 0.84, 0.72, 1.0)
 		BlockId.GLASS:
 			return Color(0.88, 0.92, 0.96, 0.18)
+		BlockId.PREP_TABLE:
+			return Color(0.78, 0.66, 0.52, 1.0)
+		BlockId.STOVE:
+			return Color(0.62, 0.62, 0.66, 1.0)
+		BlockId.OVEN:
+			return Color(0.66, 0.66, 0.70, 1.0)
+		BlockId.FERMENTER:
+			return Color(0.68, 0.54, 0.38, 1.0)
+		BlockId.BLENDER:
+			return Color(0.82, 0.92, 0.96, 1.0)
+		BlockId.FARMLAND:
+			return Color(0.58, 0.42, 0.24, 1.0)
+		BlockId.WHEAT_CROP_0, BlockId.WHEAT_CROP_1, BlockId.WHEAT_CROP_2, BlockId.CARROT_CROP_0, BlockId.CARROT_CROP_1, BlockId.CARROT_CROP_2, BlockId.POTATO_CROP_0, BlockId.POTATO_CROP_1, BlockId.POTATO_CROP_2, BlockId.RICE_CROP_0, BlockId.RICE_CROP_1, BlockId.RICE_CROP_2, BlockId.TOMATO_CROP_0, BlockId.TOMATO_CROP_1, BlockId.TOMATO_CROP_2, BlockId.CUCUMBER_CROP_0, BlockId.CUCUMBER_CROP_1, BlockId.CUCUMBER_CROP_2:
+			return Color(1.0, 1.0, 1.0, 0.95)
+		BlockId.STRAWBERRY_BUSH_0, BlockId.STRAWBERRY_BUSH_1, BlockId.STRAWBERRY_BUSH_2, BlockId.BLUEBERRY_BUSH_0, BlockId.BLUEBERRY_BUSH_1, BlockId.BLUEBERRY_BUSH_2, BlockId.BLACKBERRY_BUSH_0, BlockId.BLACKBERRY_BUSH_1, BlockId.BLACKBERRY_BUSH_2:
+			return Color(1.0, 1.0, 1.0, 0.92)
+		BlockId.MANGO_SAPLING:
+			return Color(1.0, 1.0, 1.0, 0.95)
+		BlockId.MANGO_LEAVES:
+			return Color(0.84, 0.92, 0.78, 0.88)
+		BlockId.DISPLAY_CASE:
+			return Color(0.86, 0.90, 0.96, 0.18)
 		_:
 			return Color(0.0, 0.0, 0.0, 0.0)
 
@@ -196,6 +284,78 @@ static func get_block_name(block_id: int) -> String:
 			return "sand"
 		BlockId.GLASS:
 			return "glass"
+		BlockId.PREP_TABLE:
+			return "prep_table"
+		BlockId.STOVE:
+			return "stove"
+		BlockId.OVEN:
+			return "oven"
+		BlockId.FERMENTER:
+			return "fermenter"
+		BlockId.BLENDER:
+			return "blender"
+		BlockId.FARMLAND:
+			return "farmland"
+		BlockId.WHEAT_CROP_0:
+			return "wheat_crop_0"
+		BlockId.WHEAT_CROP_1:
+			return "wheat_crop_1"
+		BlockId.WHEAT_CROP_2:
+			return "wheat_crop_2"
+		BlockId.CARROT_CROP_0:
+			return "carrot_crop_0"
+		BlockId.CARROT_CROP_1:
+			return "carrot_crop_1"
+		BlockId.CARROT_CROP_2:
+			return "carrot_crop_2"
+		BlockId.POTATO_CROP_0:
+			return "potato_crop_0"
+		BlockId.POTATO_CROP_1:
+			return "potato_crop_1"
+		BlockId.POTATO_CROP_2:
+			return "potato_crop_2"
+		BlockId.RICE_CROP_0:
+			return "rice_crop_0"
+		BlockId.RICE_CROP_1:
+			return "rice_crop_1"
+		BlockId.RICE_CROP_2:
+			return "rice_crop_2"
+		BlockId.TOMATO_CROP_0:
+			return "tomato_crop_0"
+		BlockId.TOMATO_CROP_1:
+			return "tomato_crop_1"
+		BlockId.TOMATO_CROP_2:
+			return "tomato_crop_2"
+		BlockId.CUCUMBER_CROP_0:
+			return "cucumber_crop_0"
+		BlockId.CUCUMBER_CROP_1:
+			return "cucumber_crop_1"
+		BlockId.CUCUMBER_CROP_2:
+			return "cucumber_crop_2"
+		BlockId.STRAWBERRY_BUSH_0:
+			return "strawberry_bush_0"
+		BlockId.STRAWBERRY_BUSH_1:
+			return "strawberry_bush_1"
+		BlockId.STRAWBERRY_BUSH_2:
+			return "strawberry_bush_2"
+		BlockId.BLUEBERRY_BUSH_0:
+			return "blueberry_bush_0"
+		BlockId.BLUEBERRY_BUSH_1:
+			return "blueberry_bush_1"
+		BlockId.BLUEBERRY_BUSH_2:
+			return "blueberry_bush_2"
+		BlockId.BLACKBERRY_BUSH_0:
+			return "blackberry_bush_0"
+		BlockId.BLACKBERRY_BUSH_1:
+			return "blackberry_bush_1"
+		BlockId.BLACKBERRY_BUSH_2:
+			return "blackberry_bush_2"
+		BlockId.MANGO_SAPLING:
+			return "mango_sapling"
+		BlockId.MANGO_LEAVES:
+			return "mango_leaves"
+		BlockId.DISPLAY_CASE:
+			return "display_case"
 		BlockId.WATER_FLOW_7:
 			return "water_flow_7"
 		BlockId.WATER_FLOW_6:
@@ -243,6 +403,42 @@ static func get_display_name(block_id: int) -> String:
 			return "Sand"
 		BlockId.GLASS:
 			return "Glass"
+		BlockId.PREP_TABLE:
+			return "Prep Table"
+		BlockId.STOVE:
+			return "Stove"
+		BlockId.OVEN:
+			return "Oven"
+		BlockId.FERMENTER:
+			return "Fermentation Jar"
+		BlockId.BLENDER:
+			return "Blender"
+		BlockId.FARMLAND:
+			return "Farmland"
+		BlockId.WHEAT_CROP_0, BlockId.WHEAT_CROP_1, BlockId.WHEAT_CROP_2:
+			return "Wheat Crop"
+		BlockId.CARROT_CROP_0, BlockId.CARROT_CROP_1, BlockId.CARROT_CROP_2:
+			return "Carrot Crop"
+		BlockId.POTATO_CROP_0, BlockId.POTATO_CROP_1, BlockId.POTATO_CROP_2:
+			return "Potato Crop"
+		BlockId.RICE_CROP_0, BlockId.RICE_CROP_1, BlockId.RICE_CROP_2:
+			return "Rice Crop"
+		BlockId.TOMATO_CROP_0, BlockId.TOMATO_CROP_1, BlockId.TOMATO_CROP_2:
+			return "Tomato Plant"
+		BlockId.CUCUMBER_CROP_0, BlockId.CUCUMBER_CROP_1, BlockId.CUCUMBER_CROP_2:
+			return "Cucumber Plant"
+		BlockId.STRAWBERRY_BUSH_0, BlockId.STRAWBERRY_BUSH_1, BlockId.STRAWBERRY_BUSH_2:
+			return "Strawberry Bush"
+		BlockId.BLUEBERRY_BUSH_0, BlockId.BLUEBERRY_BUSH_1, BlockId.BLUEBERRY_BUSH_2:
+			return "Blueberry Bush"
+		BlockId.BLACKBERRY_BUSH_0, BlockId.BLACKBERRY_BUSH_1, BlockId.BLACKBERRY_BUSH_2:
+			return "Blackberry Bush"
+		BlockId.MANGO_SAPLING:
+			return "Mango Sapling"
+		BlockId.MANGO_LEAVES:
+			return "Mango Leaves"
+		BlockId.DISPLAY_CASE:
+			return "Display Case"
 		BlockId.AIR:
 			return "Empty"
 		_:
@@ -272,7 +468,7 @@ static func resolve_block_token(token: String) -> int:
 	if cleaned.is_valid_int():
 		var numeric_id: int = cleaned.to_int()
 		match numeric_id:
-			BlockId.GRASS, BlockId.DIRT, BlockId.STONE, BlockId.OAK_LOG, BlockId.OAK_LEAVES, BlockId.OAK_PLANKS, BlockId.CRAFTING_TABLE, BlockId.COBBLESTONE, BlockId.FURNACE, BlockId.WATER, BlockId.COAL_ORE, BlockId.IRON_ORE, BlockId.SAND, BlockId.GLASS:
+			BlockId.GRASS, BlockId.DIRT, BlockId.STONE, BlockId.OAK_LOG, BlockId.OAK_LEAVES, BlockId.OAK_PLANKS, BlockId.CRAFTING_TABLE, BlockId.COBBLESTONE, BlockId.FURNACE, BlockId.WATER, BlockId.COAL_ORE, BlockId.IRON_ORE, BlockId.SAND, BlockId.GLASS, BlockId.PREP_TABLE, BlockId.STOVE, BlockId.OVEN, BlockId.FERMENTER, BlockId.BLENDER:
 				return numeric_id
 			_:
 				return BlockId.AIR
@@ -310,6 +506,18 @@ static func resolve_block_token(token: String) -> int:
 			return BlockId.SAND
 		"glass":
 			return BlockId.GLASS
+		"prep_table", "preptable":
+			return BlockId.PREP_TABLE
+		"stove":
+			return BlockId.STOVE
+		"oven":
+			return BlockId.OVEN
+		"fermenter", "fermentation_jar":
+			return BlockId.FERMENTER
+		"blender":
+			return BlockId.BLENDER
+		"display_case", "displaycase", "wardrobe":
+			return BlockId.DISPLAY_CASE
 		_:
 			return BlockId.AIR
 
@@ -355,6 +563,68 @@ static func get_face_tile_index(block_id: int, face_index: int) -> int:
 			return TILE_SAND
 		BlockId.GLASS:
 			return TILE_GLASS
+		BlockId.PREP_TABLE:
+			if face_index == 2:
+				return TILE_PREP_TABLE_TOP
+			return TILE_PREP_TABLE_SIDE
+		BlockId.STOVE:
+			return TILE_STOVE
+		BlockId.OVEN:
+			return TILE_OVEN
+		BlockId.FERMENTER:
+			return TILE_FERMENTER
+		BlockId.BLENDER:
+			return TILE_BLENDER
+		BlockId.FARMLAND:
+			return TILE_FARMLAND
+		BlockId.WHEAT_CROP_0:
+			return TILE_WHEAT_0
+		BlockId.WHEAT_CROP_1:
+			return TILE_WHEAT_1
+		BlockId.WHEAT_CROP_2:
+			return TILE_WHEAT_2
+		BlockId.CARROT_CROP_0:
+			return TILE_CARROT_0
+		BlockId.CARROT_CROP_1:
+			return TILE_CARROT_1
+		BlockId.CARROT_CROP_2:
+			return TILE_CARROT_2
+		BlockId.POTATO_CROP_0:
+			return TILE_POTATO_0
+		BlockId.POTATO_CROP_1:
+			return TILE_POTATO_1
+		BlockId.POTATO_CROP_2:
+			return TILE_POTATO_2
+		BlockId.RICE_CROP_0:
+			return TILE_RICE_0
+		BlockId.RICE_CROP_1:
+			return TILE_RICE_1
+		BlockId.RICE_CROP_2:
+			return TILE_RICE_2
+		BlockId.TOMATO_CROP_0:
+			return TILE_TOMATO_0
+		BlockId.TOMATO_CROP_1:
+			return TILE_TOMATO_1
+		BlockId.TOMATO_CROP_2:
+			return TILE_TOMATO_2
+		BlockId.CUCUMBER_CROP_0:
+			return TILE_CUCUMBER_0
+		BlockId.CUCUMBER_CROP_1:
+			return TILE_CUCUMBER_1
+		BlockId.CUCUMBER_CROP_2:
+			return TILE_CUCUMBER_2
+		BlockId.STRAWBERRY_BUSH_0, BlockId.STRAWBERRY_BUSH_1, BlockId.STRAWBERRY_BUSH_2:
+			return TILE_STRAWBERRY_BUSH
+		BlockId.BLUEBERRY_BUSH_0, BlockId.BLUEBERRY_BUSH_1, BlockId.BLUEBERRY_BUSH_2:
+			return TILE_BLUEBERRY_BUSH
+		BlockId.BLACKBERRY_BUSH_0, BlockId.BLACKBERRY_BUSH_1, BlockId.BLACKBERRY_BUSH_2:
+			return TILE_BLACKBERRY_BUSH
+		BlockId.MANGO_SAPLING:
+			return TILE_MANGO_SAPLING
+		BlockId.MANGO_LEAVES:
+			return TILE_MANGO_LEAVES
+		BlockId.DISPLAY_CASE:
+			return TILE_GLASS
 		_:
 			return -1
 
@@ -387,6 +657,66 @@ static func get_hotbar_tile_index(block_id: int) -> int:
 		BlockId.SAND:
 			return TILE_SAND
 		BlockId.GLASS:
+			return TILE_GLASS
+		BlockId.PREP_TABLE:
+			return TILE_PREP_TABLE_TOP
+		BlockId.STOVE:
+			return TILE_STOVE
+		BlockId.OVEN:
+			return TILE_OVEN
+		BlockId.FERMENTER:
+			return TILE_FERMENTER
+		BlockId.BLENDER:
+			return TILE_BLENDER
+		BlockId.FARMLAND:
+			return TILE_FARMLAND
+		BlockId.WHEAT_CROP_0:
+			return TILE_WHEAT_0
+		BlockId.WHEAT_CROP_1:
+			return TILE_WHEAT_1
+		BlockId.WHEAT_CROP_2:
+			return TILE_WHEAT_2
+		BlockId.CARROT_CROP_0:
+			return TILE_CARROT_0
+		BlockId.CARROT_CROP_1:
+			return TILE_CARROT_1
+		BlockId.CARROT_CROP_2:
+			return TILE_CARROT_2
+		BlockId.POTATO_CROP_0:
+			return TILE_POTATO_0
+		BlockId.POTATO_CROP_1:
+			return TILE_POTATO_1
+		BlockId.POTATO_CROP_2:
+			return TILE_POTATO_2
+		BlockId.RICE_CROP_0:
+			return TILE_RICE_0
+		BlockId.RICE_CROP_1:
+			return TILE_RICE_1
+		BlockId.RICE_CROP_2:
+			return TILE_RICE_2
+		BlockId.TOMATO_CROP_0:
+			return TILE_TOMATO_0
+		BlockId.TOMATO_CROP_1:
+			return TILE_TOMATO_1
+		BlockId.TOMATO_CROP_2:
+			return TILE_TOMATO_2
+		BlockId.CUCUMBER_CROP_0:
+			return TILE_CUCUMBER_0
+		BlockId.CUCUMBER_CROP_1:
+			return TILE_CUCUMBER_1
+		BlockId.CUCUMBER_CROP_2:
+			return TILE_CUCUMBER_2
+		BlockId.STRAWBERRY_BUSH_0, BlockId.STRAWBERRY_BUSH_1, BlockId.STRAWBERRY_BUSH_2:
+			return TILE_STRAWBERRY_BUSH
+		BlockId.BLUEBERRY_BUSH_0, BlockId.BLUEBERRY_BUSH_1, BlockId.BLUEBERRY_BUSH_2:
+			return TILE_BLUEBERRY_BUSH
+		BlockId.BLACKBERRY_BUSH_0, BlockId.BLACKBERRY_BUSH_1, BlockId.BLACKBERRY_BUSH_2:
+			return TILE_BLACKBERRY_BUSH
+		BlockId.MANGO_SAPLING:
+			return TILE_MANGO_SAPLING
+		BlockId.MANGO_LEAVES:
+			return TILE_MANGO_LEAVES
+		BlockId.DISPLAY_CASE:
 			return TILE_GLASS
 		_:
 			return -1
@@ -443,6 +773,18 @@ static func get_break_hardness(block_id: int) -> float:
 			return 2.0
 		BlockId.CRAFTING_TABLE:
 			return 2.5
+		BlockId.PREP_TABLE:
+			return 2.4
+		BlockId.STOVE:
+			return 3.0
+		BlockId.OVEN:
+			return 3.2
+		BlockId.FERMENTER:
+			return 2.1
+		BlockId.BLENDER:
+			return 1.8
+		BlockId.DISPLAY_CASE:
+			return 1.2
 		BlockId.STONE:
 			return 2.2
 		BlockId.COBBLESTONE:
@@ -455,6 +797,12 @@ static func get_break_hardness(block_id: int) -> float:
 			return 3.2
 		BlockId.GLASS:
 			return 0.5
+		BlockId.FARMLAND:
+			return 0.7
+		BlockId.WHEAT_CROP_0, BlockId.WHEAT_CROP_1, BlockId.WHEAT_CROP_2, BlockId.CARROT_CROP_0, BlockId.CARROT_CROP_1, BlockId.CARROT_CROP_2, BlockId.POTATO_CROP_0, BlockId.POTATO_CROP_1, BlockId.POTATO_CROP_2, BlockId.RICE_CROP_0, BlockId.RICE_CROP_1, BlockId.RICE_CROP_2, BlockId.TOMATO_CROP_0, BlockId.TOMATO_CROP_1, BlockId.TOMATO_CROP_2, BlockId.CUCUMBER_CROP_0, BlockId.CUCUMBER_CROP_1, BlockId.CUCUMBER_CROP_2, BlockId.STRAWBERRY_BUSH_0, BlockId.STRAWBERRY_BUSH_1, BlockId.STRAWBERRY_BUSH_2, BlockId.BLUEBERRY_BUSH_0, BlockId.BLUEBERRY_BUSH_1, BlockId.BLUEBERRY_BUSH_2, BlockId.BLACKBERRY_BUSH_0, BlockId.BLACKBERRY_BUSH_1, BlockId.BLACKBERRY_BUSH_2, BlockId.MANGO_SAPLING:
+			return 0.1
+		BlockId.MANGO_LEAVES:
+			return 0.2
 		BlockId.WATER, BlockId.WATER_FLOW_7, BlockId.WATER_FLOW_6, BlockId.WATER_FLOW_5, BlockId.WATER_FLOW_4, BlockId.WATER_FLOW_3, BlockId.WATER_FLOW_2, BlockId.WATER_FLOW_1:
 			return 0.0
 		_:
@@ -464,17 +812,54 @@ static func get_preferred_tool(block_id: int) -> String:
 	match block_id:
 		BlockId.STONE, BlockId.COBBLESTONE, BlockId.FURNACE, BlockId.COAL_ORE, BlockId.IRON_ORE:
 			return "pickaxe"
-		BlockId.OAK_LOG, BlockId.OAK_PLANKS, BlockId.CRAFTING_TABLE:
+		BlockId.OAK_LOG, BlockId.OAK_PLANKS, BlockId.CRAFTING_TABLE, BlockId.PREP_TABLE, BlockId.FERMENTER:
+			return "axe"
+		BlockId.STOVE, BlockId.OVEN, BlockId.BLENDER:
+			return "pickaxe"
+		BlockId.DISPLAY_CASE:
 			return "axe"
 		_:
 			return ""
 
 static func get_required_tool_tier(block_id: int) -> int:
 	match block_id:
-		BlockId.STONE, BlockId.COBBLESTONE, BlockId.COAL_ORE, BlockId.IRON_ORE, BlockId.FURNACE:
+		BlockId.STONE, BlockId.COBBLESTONE, BlockId.COAL_ORE, BlockId.IRON_ORE, BlockId.FURNACE, BlockId.STOVE, BlockId.OVEN, BlockId.BLENDER:
 			return 1
+		BlockId.DISPLAY_CASE:
+			return 0
 		_:
 			return 0
 
 static func requires_correct_tool_for_drop(block_id: int) -> bool:
 	return get_required_tool_tier(block_id) > 0
+
+
+static func is_plant_block(block_id: int) -> bool:
+	return block_id >= BlockId.WHEAT_CROP_0 and block_id <= BlockId.CUCUMBER_CROP_2
+
+static func is_bush_block(block_id: int) -> bool:
+	return block_id >= BlockId.STRAWBERRY_BUSH_0 and block_id <= BlockId.BLACKBERRY_BUSH_2
+
+static func get_custom_mesh_kind(block_id: int) -> String:
+	if is_plant_block(block_id) or block_id == BlockId.MANGO_SAPLING:
+		return "cross"
+	if is_bush_block(block_id):
+		return "bush"
+	return "cube"
+
+static func get_visual_height(block_id: int) -> float:
+	match block_id:
+		BlockId.WHEAT_CROP_0, BlockId.CARROT_CROP_0, BlockId.POTATO_CROP_0, BlockId.RICE_CROP_0, BlockId.TOMATO_CROP_0, BlockId.CUCUMBER_CROP_0:
+			return 0.36
+		BlockId.WHEAT_CROP_1, BlockId.CARROT_CROP_1, BlockId.POTATO_CROP_1, BlockId.RICE_CROP_1, BlockId.TOMATO_CROP_1, BlockId.CUCUMBER_CROP_1:
+			return 0.64
+		BlockId.WHEAT_CROP_2, BlockId.CARROT_CROP_2, BlockId.POTATO_CROP_2, BlockId.RICE_CROP_2, BlockId.TOMATO_CROP_2, BlockId.CUCUMBER_CROP_2, BlockId.MANGO_SAPLING:
+			return 0.96
+		BlockId.STRAWBERRY_BUSH_0, BlockId.BLUEBERRY_BUSH_0, BlockId.BLACKBERRY_BUSH_0:
+			return 0.42
+		BlockId.STRAWBERRY_BUSH_1, BlockId.BLUEBERRY_BUSH_1, BlockId.BLACKBERRY_BUSH_1:
+			return 0.62
+		BlockId.STRAWBERRY_BUSH_2, BlockId.BLUEBERRY_BUSH_2, BlockId.BLACKBERRY_BUSH_2:
+			return 0.82
+		_:
+			return 1.0
