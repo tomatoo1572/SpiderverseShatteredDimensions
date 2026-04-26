@@ -116,11 +116,17 @@ static func get_stove_recipe(primary_item_id: int, secondary_input_item_id: int,
 			return _stove_recipe(SSDItemDefs.ITEM_STEAK, 1, 7.5)
 		if primary_item_id == SSDItemDefs.ITEM_RAW_CHICKEN and secondary_input_item_id == SSDItemDefs.ITEM_AIR:
 			return _stove_recipe(SSDItemDefs.ITEM_COOKED_CHICKEN, 1, 7.0)
+		if primary_item_id == SSDItemDefs.ITEM_SAUSAGE and secondary_input_item_id == SSDItemDefs.ITEM_AIR:
+			return _stove_recipe(SSDItemDefs.ITEM_BACON_BITS, 1, 6.5)
 	elif cookware_item_id == SSDItemDefs.ITEM_POT:
 		if primary_item_id == SSDItemDefs.ITEM_RICE and secondary_input_item_id == SSDItemDefs.ITEM_AIR:
 			return _stove_recipe(SSDItemDefs.ITEM_COOKED_RICE, 1, 6.5)
 		if primary_item_id == SSDItemDefs.ITEM_POTATO and secondary_input_item_id == SSDItemDefs.ITEM_AIR:
 			return _stove_recipe(SSDItemDefs.ITEM_MASHED_POTATOES, 1, 8.0)
+		if primary_item_id == SSDItemDefs.ITEM_SPAGHETTI_MIX and secondary_input_item_id == SSDItemDefs.ITEM_AIR:
+			return _stove_recipe(SSDItemDefs.ITEM_DADS_SPAGHETTI, 1, 10.5)
+		if primary_item_id == SSDItemDefs.ITEM_RAW_ALFREDO and secondary_input_item_id == SSDItemDefs.ITEM_AIR:
+			return _stove_recipe(SSDItemDefs.ITEM_CHICKEN_ALFREDO, 1, 10.5)
 		if secondary_input_item_id != SSDItemDefs.ITEM_AIR:
 			if _items_match_pair(primary_item_id, secondary_input_item_id, SSDItemDefs.ITEM_NOODLES, SSDItemDefs.ITEM_SHREDDED_CHEESE):
 				return _stove_recipe(SSDItemDefs.ITEM_MAC_AND_CHEESE, 1, 9.5, 1)
@@ -132,12 +138,18 @@ static func get_stove_recipe(primary_item_id: int, secondary_input_item_id: int,
 				return _stove_recipe(SSDItemDefs.ITEM_DADS_SPAGHETTI, 1, 10.0, 1)
 			if _items_match_pair(primary_item_id, secondary_input_item_id, SSDItemDefs.ITEM_NOODLES, SSDItemDefs.ITEM_COOKED_CHICKEN):
 				return _stove_recipe(SSDItemDefs.ITEM_CHICKEN_ALFREDO, 1, 10.0, 1)
+			if _items_match_pair(primary_item_id, secondary_input_item_id, SSDItemDefs.ITEM_RAW_PHO_BOWL, SSDItemDefs.ITEM_COOKED_BEEF):
+				return _stove_recipe(SSDItemDefs.ITEM_PHO, 1, 11.5, 1)
+			if _items_match_pair(primary_item_id, secondary_input_item_id, SSDItemDefs.ITEM_SPAGHETTI_MIX, SSDItemDefs.ITEM_RED_SAUCE):
+				return _stove_recipe(SSDItemDefs.ITEM_DADS_SPAGHETTI, 1, 10.5, 1)
+			if _items_match_pair(primary_item_id, secondary_input_item_id, SSDItemDefs.ITEM_RAW_ALFREDO, SSDItemDefs.ITEM_ALFREDO_BASE):
+				return _stove_recipe(SSDItemDefs.ITEM_CHICKEN_ALFREDO, 1, 10.5, 1)
 	return _empty_recipe()
 
 static func stove_accepts_second_ingredient(primary_item_id: int, cookware_item_id: int) -> bool:
 	if primary_item_id == SSDItemDefs.ITEM_AIR or not is_stove_cookware(cookware_item_id):
 		return false
-	for candidate: int in PackedInt32Array([SSDItemDefs.ITEM_NOODLES, SSDItemDefs.ITEM_SHREDDED_CHEESE, SSDItemDefs.ITEM_BROTH, SSDItemDefs.ITEM_COOKED_BEEF, SSDItemDefs.ITEM_GROUND_BEEF, SSDItemDefs.ITEM_COOKED_CHICKEN]):
+	for candidate: int in PackedInt32Array([SSDItemDefs.ITEM_NOODLES, SSDItemDefs.ITEM_SHREDDED_CHEESE, SSDItemDefs.ITEM_BROTH, SSDItemDefs.ITEM_COOKED_BEEF, SSDItemDefs.ITEM_GROUND_BEEF, SSDItemDefs.ITEM_COOKED_CHICKEN, SSDItemDefs.ITEM_RAW_PHO_BOWL, SSDItemDefs.ITEM_RED_SAUCE, SSDItemDefs.ITEM_ALFREDO_BASE]):
 		if int(get_stove_recipe(primary_item_id, candidate, cookware_item_id).get("item_id", SSDItemDefs.ITEM_AIR)) != SSDItemDefs.ITEM_AIR:
 			return true
 	return false
@@ -184,6 +196,28 @@ static func get_recipe(station_type: String, input_item_id: int, secondary_item_
 				return {"item_id": SSDItemDefs.ITEM_SPRING_ROLLS, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
 			if input_item_id == SSDItemDefs.ITEM_COOKIE_DOUGH and secondary_item_id == SSDItemDefs.ITEM_STRAWBERRY:
 				return {"item_id": SSDItemDefs.ITEM_RED_VELVET_COOKIE_DOUGH, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_MUSHROOM and secondary_item_id == SSDItemDefs.ITEM_AIR:
+				return {"item_id": SSDItemDefs.ITEM_SLICED_MUSHROOMS, "count": 1, "cook_time": 0.9, "secondary_consumed": false, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_ONION and secondary_item_id == SSDItemDefs.ITEM_AIR:
+				return {"item_id": SSDItemDefs.ITEM_SLICED_ONION, "count": 1, "cook_time": 0.9, "secondary_consumed": false, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_SLICED_TOMATO and secondary_item_id == SSDItemDefs.ITEM_WATER_BOTTLE:
+				return {"item_id": SSDItemDefs.ITEM_RED_SAUCE, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_GLASS_BOTTLE}
+			if input_item_id == SSDItemDefs.ITEM_SHREDDED_CHEESE and secondary_item_id == SSDItemDefs.ITEM_WATER_BOTTLE:
+				return {"item_id": SSDItemDefs.ITEM_ALFREDO_BASE, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_GLASS_BOTTLE}
+			if input_item_id == SSDItemDefs.ITEM_RAW_CHICKEN and secondary_item_id == SSDItemDefs.ITEM_FLOUR:
+				return {"item_id": SSDItemDefs.ITEM_RAW_DINO_NUGGETS, "count": 1, "cook_time": 1.1, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_NOODLES and secondary_item_id == SSDItemDefs.ITEM_BROTH:
+				return {"item_id": SSDItemDefs.ITEM_RAW_PHO_BOWL, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_NOODLES and secondary_item_id == SSDItemDefs.ITEM_RED_SAUCE:
+				return {"item_id": SSDItemDefs.ITEM_SPAGHETTI_MIX, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_NOODLES and secondary_item_id == SSDItemDefs.ITEM_COOKED_CHICKEN:
+				return {"item_id": SSDItemDefs.ITEM_RAW_ALFREDO, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_COOKED_CHICKEN and secondary_item_id == SSDItemDefs.ITEM_SLICED_TOMATO:
+				return {"item_id": SSDItemDefs.ITEM_SUB_FILLING, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_BREADSTICKS and secondary_item_id == SSDItemDefs.ITEM_SUB_FILLING:
+				return {"item_id": SSDItemDefs.ITEM_FOOTLONG_SANDWICH, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_RAW_CHEESE_PIZZA and secondary_item_id in [SSDItemDefs.ITEM_PEPPERONI, SSDItemDefs.ITEM_SAUSAGE, SSDItemDefs.ITEM_BACON_BITS]:
+				return {"item_id": SSDItemDefs.ITEM_RAW_MEAT_LOVERS_PIZZA, "count": 1, "cook_time": 1.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
 		STATION_STOVE:
 			return get_stove_recipe(input_item_id, SSDItemDefs.ITEM_AIR, secondary_item_id)
 		STATION_OVEN:
@@ -203,6 +237,10 @@ static func get_recipe(station_type: String, input_item_id: int, secondary_item_
 				return {"item_id": SSDItemDefs.ITEM_ITALIAN_CHEESE_BREAD, "count": 1, "cook_time": 9.5, "secondary_consumed": false, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
 			if input_item_id == SSDItemDefs.ITEM_RED_VELVET_COOKIE_DOUGH:
 				return {"item_id": SSDItemDefs.ITEM_RED_VELVET_COOKIE, "count": 1, "cook_time": 8.5, "secondary_consumed": false, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_RAW_DINO_NUGGETS:
+				return {"item_id": SSDItemDefs.ITEM_DINO_NUGGETS, "count": 1, "cook_time": 7.5, "secondary_consumed": false, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if input_item_id == SSDItemDefs.ITEM_BREADSTICKS:
+				return {"item_id": SSDItemDefs.ITEM_OLIVE_GARDEN_BREADSTICKS, "count": 1, "cook_time": 4.5, "secondary_consumed": false, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
 		STATION_FERMENTER:
 			if input_item_id == SSDItemDefs.ITEM_CUCUMBER and secondary_item_id == SSDItemDefs.ITEM_WATER_BOTTLE:
 				return {"item_id": SSDItemDefs.ITEM_PICKLES, "count": 1, "cook_time": 16.0, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_GLASS_BOTTLE}
@@ -211,12 +249,14 @@ static func get_recipe(station_type: String, input_item_id: int, secondary_item_
 				return {"item_id": SSDItemDefs.ITEM_SMOOTHIE, "count": 1, "cook_time": 4.5, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
 			if secondary_item_id == SSDItemDefs.ITEM_WATER_BOTTLE and input_item_id == SSDItemDefs.ITEM_CHOCOLATE_CHIP_COOKIE:
 				return {"item_id": SSDItemDefs.ITEM_CARAMEL_FRAPPE, "count": 1, "cook_time": 5.2, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
+			if secondary_item_id == SSDItemDefs.ITEM_WATER_BOTTLE and input_item_id == SSDItemDefs.ITEM_TWIX:
+				return {"item_id": SSDItemDefs.ITEM_CARAMEL_FRAPPE, "count": 1, "cook_time": 5.2, "secondary_consumed": true, "secondary_return_item_id": SSDItemDefs.ITEM_AIR}
 	return _empty_recipe()
 
 static func _valid_secondary_items(station_type: String) -> PackedInt32Array:
 	match station_type:
 		STATION_PREP:
-			return PackedInt32Array([SSDItemDefs.ITEM_AIR, SSDItemDefs.ITEM_WATER_BOTTLE, SSDItemDefs.ITEM_SLICED_TOMATO, SSDItemDefs.ITEM_SHREDDED_CHEESE, SSDItemDefs.ITEM_COOKED_CHICKEN, SSDItemDefs.ITEM_GROUND_BEEF, SSDItemDefs.ITEM_CARROT, SSDItemDefs.ITEM_STRAWBERRY])
+			return PackedInt32Array([SSDItemDefs.ITEM_AIR, SSDItemDefs.ITEM_WATER_BOTTLE, SSDItemDefs.ITEM_SLICED_TOMATO, SSDItemDefs.ITEM_SHREDDED_CHEESE, SSDItemDefs.ITEM_COOKED_CHICKEN, SSDItemDefs.ITEM_GROUND_BEEF, SSDItemDefs.ITEM_CARROT, SSDItemDefs.ITEM_STRAWBERRY, SSDItemDefs.ITEM_FLOUR, SSDItemDefs.ITEM_BROTH, SSDItemDefs.ITEM_RED_SAUCE, SSDItemDefs.ITEM_SUB_FILLING, SSDItemDefs.ITEM_PEPPERONI, SSDItemDefs.ITEM_SAUSAGE, SSDItemDefs.ITEM_BACON_BITS])
 		STATION_STOVE:
 			return PackedInt32Array([SSDItemDefs.ITEM_PAN, SSDItemDefs.ITEM_POT])
 		STATION_OVEN:
