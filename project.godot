@@ -1,21 +1,30 @@
 ; Engine configuration file.
-; Spiderverse Shattered Dimensions - Phase 1 Terrain Foundation
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
 config_version=5
 
 [application]
+
 config/name="Spiderverse Shattered Dimensions"
 run/main_scene="res://scenes/menu/MainMenu.tscn"
-boot_splash/show_image=false
 config/features=PackedStringArray("4.6", "Forward Plus")
+boot_splash/show_image=false
 
 [autoload]
+
 SSDCore="*res://autoload/SSDCore.gd"
 
 [display]
+
 window/size/viewport_width=1600
 window/size/viewport_height=900
 window/vsync/vsync_mode=0
 
 [rendering]
-renderer/rendering_method="forward_plus"
+
 environment/defaults/default_clear_color=Color(0.580392, 0.729412, 0.917647, 1)
